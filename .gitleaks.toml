@@ -1,0 +1,3 @@
+# Cấu hình gitleaks: dùng toàn bộ luật mặc định.
+[extend]
+useDefault = true
