@@ -1,0 +1,31 @@
+[package]
+name = "tsuscan-imaging"
+description = "Lõi xử lý ảnh Tsu Scan: giải mã, dò mép, nắn phối cảnh, bộ lọc"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[features]
+# Bộ sinh ảnh tổng hợp có nhãn (test, benchmark, CLI dev). Không bật trong app.
+synth = []
+
+[dependencies]
+image.workspace = true
+imageproc.workspace = true
+nalgebra.workspace = true
+thiserror.workspace = true
+
+[dev-dependencies]
+# Tự phụ thuộc để test tích hợp/benchmark luôn có tính năng `synth`.
+tsuscan-imaging = { path = ".", features = ["synth"] }
+criterion.workspace = true
+
+[[bench]]
+name = "detect"
+harness = false
+
+[lints]
+workspace = true

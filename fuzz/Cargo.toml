@@ -1,0 +1,32 @@
+# Đích fuzz cho bộ đọc dữ liệu không tin cậy. Nằm ngoài workspace (cần nightly + cargo-fuzz).
+# Chạy: cd fuzz && cargo +nightly fuzz run decode -- -max_total_time=60
+[package]
+name = "tsuscan-fuzz"
+version = "0.0.0"
+edition = "2024"
+license = "AGPL-3.0-only"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+tsuscan-imaging = { path = "../crates/tsuscan-imaging" }
+image = { version = "0.25.10", default-features = false }
+
+[[bin]]
+name = "decode"
+path = "fuzz_targets/decode.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "detect"
+path = "fuzz_targets/detect.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]

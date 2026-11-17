@@ -5,8 +5,7 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P1 - Lõi ảnh `crates/tsuscan-imaging`** (phiếu `logs/handover/20261118-01_p0-xong-bat-dau-p1.md`)
-- [ ] P2 - AI trên máy + OCR
+- [ ] **P2 - AI trên máy + OCR** (phiếu `logs/handover/20261118-02_p1-xong-bat-dau-p2.md`)
 - [ ] P3 - Tài liệu + xuất
 - [ ] P4 - Kho dữ liệu + mật mã
 - [ ] P5 - Khung app Flutter
@@ -28,11 +27,20 @@
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
+- 18/11/2026 - P1 Lõi ảnh (agent-scan, PR `feat/p1-imaging`): `crates/tsuscan-imaging` (giải mã có giới hạn, dò mép,
+  nắn, 7 bộ lọc), `crates/tsuscan-cli`, bộ sinh ảnh có nhãn, IoU TB 0,9977 / 100% ≥ 0,80 trên 150 ảnh, ảnh vàng bộ lọc,
+  fuzz + test bền vững, CI `Lõi Rust (crates)`, phiếu rà soát `docs/security-reviews/20261118-p1-imaging.md`.
+  Mở: chứng minh benchmark < 40 ms trên máy rảnh (phiếu 02 mục 2).
+
 - 18/11/2026 - P0 Nền móng (agent-scan): bộ quy ước v3.7.0, `docs/PLAN.md` (15 phase), `docs/ARCHITECTURE.md`,
   `docs/FEATURES.md` (chọn lọc từ 10 app tham chiếu), ADR 0001-0006, LICENSE AGPL-3.0, README/SECURITY/NOTICE/CHANGELOG,
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 18/11/2026 - Thư mục dự án đổi thành `~/projects/tsuscan` (khớp tên repo), chủ dự án yêu cầu.
+- 18/11/2026 - Dò mép P1: nhiều bộ sinh ứng viên (contour, vùng sáng, Hough có hướng) + một bộ chấm điểm cực tính;
+  lượt sắc độ R-B chỉ chạy khi lượt độ sáng < 0,8 (sắc độ cứu bàn trắng nhưng là nhiễu trên gỗ).
 
 - 18/11/2026 - Chủ dự án chốt: repo `tsudev-org/tsuscan` Public, E2EE + xử lý trên máy, máy scan thật (agent chọn: đầy
   đủ), iOS hoãn dùng PWA, vi mặc định + en, tên miền `tsuscan.tsudev.com`, mã app `com.tsudev.tsuscan` (`docs/PLAN.md`).

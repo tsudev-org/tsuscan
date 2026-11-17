@@ -5,4 +5,9 @@ updates:
     schedule: { interval: monthly, timezone: Asia/Ho_Chi_Minh }
     open-pull-requests-limit: 2
     groups: { actions: { patterns: ['*'] } }
-# Thêm cargo (P1), pub (P5), npm (P8, P11) khi có tệp khóa phụ thuộc.
+  - package-ecosystem: cargo
+    directories: [/, /fuzz]
+    schedule: { interval: monthly, timezone: Asia/Ho_Chi_Minh }
+    open-pull-requests-limit: 3
+    groups: { cargo: { patterns: ['*'] } }
+# Thêm pub (P5), npm (P8, P11) khi có tệp khóa phụ thuộc.

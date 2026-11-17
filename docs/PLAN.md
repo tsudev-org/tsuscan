@@ -16,7 +16,7 @@ tsudev. Chất lượng dò mép, làm phẳng trang, lọc ảnh và OCR tiến
 
 | Mục | Quyết định |
 | --- | --- |
-| Tên sản phẩm / thư mục / repo | "Tsu Scan" / `~/projects/tsu-scan` / `tsudev-org/tsuscan` (Public) |
+| Tên sản phẩm / thư mục / repo | "Tsu Scan" / `~/projects/tsuscan` (đổi từ `tsu-scan` ngày 18/11/2026 cho khớp tên repo) / `tsudev-org/tsuscan` (Public) |
 | Bảo vệ dữ liệu | E2EE, máy chủ chỉ giữ bản mã; OCR/AI chạy trên thiết bị, không gửi ảnh ra ngoài (ADR-0002, 0003) |
 | Máy tính | Đầy đủ: nhập tệp, webcam, **điều khiển máy scan thật** eSCL/SANE/WIA/TWAIN/ICA (ADR-0005, agent tự chọn theo ủy quyền) |
 | Phát hành di động | Android miễn phí (GitHub Releases + F-Droid); iOS viết sẵn mã, chờ tài khoản Apple; iPhone tạm dùng PWA |
