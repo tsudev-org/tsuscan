@@ -5,7 +5,7 @@
 schema = 1
 
 [signing]
-# Khóa công khai minisign của tsudev cho mô hình phát hành lại từ GitHub Release (P12). Trống ⇒ chỉ kiểm sha256.
+# Khóa công khai minisign của TsuDEV cho mô hình phát hành lại từ GitHub Release (P12). Trống ⇒ chỉ kiểm sha256.
 public_key = ""
 
 [[model]]

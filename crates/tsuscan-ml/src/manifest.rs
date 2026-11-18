@@ -3,7 +3,7 @@
 //! Tệp mô hình tải từ mạng là **dữ liệu không tin cậy**. Trước khi đưa cho tract, mọi tệp `MUST` khớp kích thước và
 //! sha256 ghi trong manifest. Manifest được nhúng vào app lúc build ([`Manifest::embedded`]) nên là mỏ neo tin cậy
 //! ngang với chính bản app đã ký. Khi `signing.public_key` có giá trị, tệp còn `MUST` kèm chữ ký minisign `<tệp>.minisig`
-//! hợp lệ (dùng cho mô hình phát hành lại từ Release tsudev, P12).
+//! hợp lệ (dùng cho mô hình phát hành lại từ Release TsuDEV, P12).
 
 use std::path::{Path, PathBuf};
 
