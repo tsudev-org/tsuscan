@@ -51,9 +51,13 @@ jobs:
       CARGO_DENY_SHA256: '9f12ed4c49936e09b48bf862b595cde2fe64fcbd9d74dfacac6131ca824c8d5f'
       LLVM_COV_VERSION: '0.9.1'
       LLVM_COV_SHA256: '3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522'
+      # Test PDF đối chiếu bằng bộ đọc độc lập (poppler, qpdf): thiếu công cụ thì TRƯỢT (cục bộ chỉ bỏ qua).
+      TSUSCAN_REQUIRE_PDF_TOOLS: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
+      - name: Công cụ đối chiếu PDF (poppler-utils, qpdf - kho Ubuntu đã ký)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends poppler-utils qpdf
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -82,10 +86,11 @@ jobs:
           echo "$bin" >> "$GITHUB_PATH"
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - name: Test + độ phủ (≥ 85% dòng cho tsuscan-imaging)
+      - name: Test + độ phủ (≥ 85% dòng cho tsuscan-imaging, tsuscan-doc)
         run: |
           cargo llvm-cov --workspace --locked --no-report -- --nocapture
           cargo llvm-cov report --package tsuscan-imaging --ignore-filename-regex 'synth\.rs|tsuscan-cli' --fail-under-lines 85
+          cargo llvm-cov report --package tsuscan-doc --ignore-filename-regex 'tsuscan-imaging|tsuscan-ml|tsuscan-cli|examples' --fail-under-lines 85
       - run: cargo deny --locked check
       - name: Benchmark biên dịch được
         run: cargo bench --workspace --locked --no-run
@@ -131,6 +136,12 @@ jobs:
           tar -xzf "$RUNNER_TEMP/$f" -C "$bin"
           echo "$bin" >> "$GITHUB_PATH"
       - run: cargo run -q --locked -p tsuscan-cli -- models
+      - name: OCR thật → PDF có lớp chữ → pdftotext (CER ≤ 3%)
+        env:
+          TSUSCAN_REQUIRE_PDF_TOOLS: '1'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends poppler-utils
+          cargo test -q --locked -p tsuscan-doc --test ocr_pdf -- --nocapture
       - name: Test có mô hình (CER ≤ 3%, hướng trang, làm phẳng) + độ phủ ≥ 85% dòng
         run: |
           cargo llvm-cov --package tsuscan-ml --locked --no-report -- --nocapture --test-threads=1

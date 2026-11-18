@@ -5,8 +5,7 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P3 - Tài liệu + xuất** (phiếu `logs/handover/20261118-03_p2-xong-bat-dau-p3.md`)
-- [ ] P4 - Kho dữ liệu + mật mã
+- [ ] **P4 - Kho dữ liệu + mật mã** (phiếu `logs/handover/20261119-04_p3-xong-bat-dau-p4.md`)
 - [ ] P5 - Khung app Flutter
 - [ ] P6 - Quét bằng camera (Android)
 - [ ] P7 - Công cụ sửa + tổ chức
@@ -26,6 +25,12 @@
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
+- 19/11/2026 - P3 Tài liệu + xuất (agent-scan, PR `feat/p3-doc`): `crates/tsuscan-doc` - PDF lớp chữ OCR ẩn (phông
+  không nét tự sinh), PDF/A-2b, AES-256 R6, nén tự nhận màu/xám/đen trắng (JPEG/G4), DOCX/XLSX/TXT/MD/ảnh, nhập PDF
+  (hayro) + ảnh, HEIC qua hệ điều hành, chặn bom giải nén 2 lớp, che thông tin xóa hẳn, chữ ký hình, QR/mã vạch (rxing);
+  CLI `pdf/export/import/redact/barcode`; ADR-0008; phiếu rà soát `docs/security-reviews/20261119-p3-doc.md`. Đo:
+  OCR → PDF → pdftotext CER 0,66% (lớp chữ 0,00% so chữ OCR); qpdf/pikepdf/poppler/python-docx/openpyxl đối chiếu đạt.
+
 - 18/11/2026 - P2 AI trên máy + OCR (agent-scan, PR `feat/p2-ml`): `crates/tsuscan-ml` trên tract - OCR PP-OCRv5 det +
   AsterNet (CER 0,51% / 12 trang), hướng trang (24/24), làm phẳng UVDoc (CER trang cong 33,8% → 0,46%), tách 2 trang,
   xóa ngón tay, bố cục → Markdown; manifest mô hình kiểm sha256/minisign, `scripts/fetch-models.sh`, ADR-0007, phiếu
@@ -42,6 +47,9 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 19/11/2026 - Tầng tài liệu: ghi PDF tự làm trên pdf-writer (mã hóa R6 tự cài), nhập PDF bằng hayro vẽ thành ảnh,
+  G4 thay JBIG2, JPEG thuần Rust thay MozJPEG, HEIC qua bộ giải mã hệ điều hành: `docs/adr/0008-*`.
 
 - 18/11/2026 - OCR: PP-OCRv5 mobile det + AsterNet rec trên tract; hướng trang PP-LCNet; làm phẳng UVDoc; tách trang/
   ngón tay/bố cục cổ điển; chưa thêm AI phân đoạn (xem lại ở P6): `docs/adr/0007-*`.

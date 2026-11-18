@@ -22,6 +22,9 @@ allow = [
   "Zlib",
   "Unicode-3.0",
   "MPL-2.0",
+  # jpeg-encoder ((MIT OR Apache-2.0) AND IJG): giấy phép thư viện JPEG độc lập - dễ dãi, chỉ yêu cầu ghi công
+  # (ghi ở THIRD-PARTY-NOTICES.md). Thêm 19/11/2026 cho P3.
+  "IJG",
 ]
 confidence-threshold = 0.9
 # Crate của chính repo (publish = false, AGPL-3.0-only) không cần nằm trong danh sách cho phép.
