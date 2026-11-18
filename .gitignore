@@ -313,3 +313,9 @@ storybook-static/
 .netlify/
 .wrangler/
 .output/
+
+# --- Riêng của repo này ---
+# Tệp mô hình AI tải theo models/manifest.toml, KHÔNG vào git (ADR-0002, P2)
+models/*
+!models/manifest.toml
+!models/README.md

@@ -1,6 +1,6 @@
 [package]
 name = "tsuscan-cli"
-description = "CLI dev của Tsu Scan: dò mép, quét, sinh ảnh mẫu"
+description = "CLI dev của Tsu Scan: dò mép, quét, OCR, sinh ảnh mẫu"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -14,6 +14,7 @@ path = "src/main.rs"
 
 [dependencies]
 tsuscan-imaging = { workspace = true, features = ["synth"] }
+tsuscan-ml = { workspace = true, features = ["synth"] }
 image.workspace = true
 clap.workspace = true
 serde_json.workspace = true
