@@ -4,7 +4,12 @@ all-features = true
 
 [advisories]
 # Mọi cảnh báo RustSec (lỗ hổng, không còn bảo trì, bị rút) đều chặn; ngoại lệ ghi rõ lý do + hạn.
-ignore = []
+ignore = [
+  # ttf-parser (qua ab_glyph) không còn bảo trì - KHÔNG phải lỗ hổng. Chỉ dùng trong feature `synth` của tsuscan-ml
+  # (sinh trang mẫu test từ font OFL có sẵn trong repo, không đọc font của người dùng, không vào app).
+  # Hạn: xem lại ở P13 hoặc khi có bản thay (skrifa); app KHÔNG được bật `synth`. Ghi 18/11/2026.
+  { id = "RUSTSEC-2026-0192", reason = "chỉ dùng sinh dữ liệu test từ font trong repo; không vào app" },
+]
 
 [licenses]
 allow = [

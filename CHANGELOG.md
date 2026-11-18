@@ -11,7 +11,8 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 | CER OCR tiếng Việt in, toàn trang (`ocr_cer`, 12 trang) | ≤ 3% | **0,51%** (82/16.006 ký tự; WER 2,63%; Tinos 0,56%, Tinos Bold 0,68%, Arimo, Be Vietnam Pro 0,46%) |
 | Hướng trang đúng (6 trang × 4 góc) | ≥ 95% | 24/24 |
 | CER trang cong 45 px trước → sau làm phẳng | giảm, ≤ 5% | 33,77% → 0,46% |
-| Thời gian OCR (CPU luồng, tract) | - | dò dòng ≈ 1,6-2,2 s/trang (cạnh 1.280); nhận dạng ≈ 0,11 s (rộng 256) - 0,64 s (rộng 1.024) mỗi dòng sau khi biên dịch xô |
+| Thời gian OCR toàn trang (runner CI, gồm biên dịch xô) | - | ≈ 4,1 s/trang; độ phủ `tsuscan-ml` 94,16% dòng |
+| Thời gian OCR (CPU luồng, tract, máy dev) | - | dò dòng ≈ 1,6-2,2 s/trang (cạnh 1.280); nhận dạng ≈ 0,11 s (rộng 256) - 0,64 s (rộng 1.024) mỗi dòng sau khi biên dịch xô |
 | Dò mép P1 `detect` (CPU luồng, `diag -- 0 50`, tải 2,9) | < 40 ms | **31,6 ms/khung** - chỉ tiêu P1 đã chứng minh |
 | Thời gian nhận dạng hình dạng ký hiệu (đã bỏ) | - | 0,32 s (256) - 1,35 s (1.024) mỗi dòng ⇒ chuyển sang xô chiều rộng 128 px |
 
