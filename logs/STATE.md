@@ -21,7 +21,7 @@
 
 | Task | Agent | Bắt đầu |
 | --- | --- | --- |
-| (trống) | | |
+| P4 - Kho dữ liệu + mật mã (`feat/p4-vault`) | agent-scan | 04:43 19/11/2026 |
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
