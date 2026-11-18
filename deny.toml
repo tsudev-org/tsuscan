@@ -9,6 +9,10 @@ ignore = [
   # (sinh trang mẫu test từ font OFL có sẵn trong repo, không đọc font của người dùng, không vào app).
   # Hạn: xem lại ở P13 hoặc khi có bản thay (skrifa); app KHÔNG được bật `synth`. Ghi 18/11/2026.
   { id = "RUSTSEC-2026-0192", reason = "chỉ dùng sinh dữ liệu test từ font trong repo; không vào app" },
+  # chrono không còn bảo trì - KHÔNG phải lỗ hổng. Phụ thuộc bắt buộc của rxing (đọc mã vạch, tsuscan-doc), chỉ dùng
+  # gắn mốc thời gian vào kết quả giải mã; phần phân tích ngày giờ từ dữ liệu mã (`client_support`) đã TẮT.
+  # Hạn: xem lại ở P13 hoặc khi rxing chuyển sang jiff/time. Ghi 19/11/2026.
+  { id = "RUSTSEC-2026-0543", reason = "rxing chỉ dùng chrono gắn mốc thời gian; không phân tích ngày giờ không tin cậy" },
 ]
 
 [licenses]
