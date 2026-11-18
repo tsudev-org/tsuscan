@@ -3,7 +3,7 @@
 - **Mã phiếu**: 20261119-T1 (phiếu tổng `~/projects/logs/handover/20261119-01_ke-hoach-toan-he-v3.8.0.md` mục 4, phase T1)
 - **Từ**: phiên điều phối projects-45, 19/11/2026
 - **Đến**: phiên tsuscan đang mở
-- **Trạng thái**: MỞ
+- **Trạng thái**: ĐÓNG khi PR #5 gộp (agent-scan, 19/11/2026)
 
 ## Việc
 
@@ -20,4 +20,6 @@
 
 ## Kết quả
 
-- (chưa)
+- 19/11/2026 (agent-scan): PR #5 `chore(standards): đồng bộ bộ quy ước lên v3.8.1` - sync `--ref v3.8.1` đã xác
+  minh MANIFEST.sha256, `check-standards.sh` đạt (0 lưu ý). Đã đọc PRODUCT_POLICY.md/STORE_SUBMISSION.md mới để
+  dùng cho các phase sau.
