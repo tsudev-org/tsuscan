@@ -1,0 +1,56 @@
+[workspace]
+resolver = "3"
+members = ["crates/tsuscan-imaging", "crates/tsuscan-cli"]
+exclude = ["fuzz"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+license = "AGPL-3.0-only"
+repository = "https://github.com/tsudev-org/tsuscan"
+publish = false
+
+[workspace.dependencies]
+tsuscan-imaging = { path = "crates/tsuscan-imaging" }
+image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
+imageproc = { version = "0.27.0", default-features = false }
+nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
+thiserror = "2.0.21"
+clap = { version = "4.6.8", features = ["derive"] }
+serde_json = "1.0.154"
+criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+missing_docs = "warn"
+
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+# Xử lý ảnh đổi kiểu số liên tục; ép kiểu được chặn biên tường minh ở chỗ cần.
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+cast_precision_loss = "allow"
+cast_possible_wrap = "allow"
+similar_names = "allow"
+# Tài liệu tiếng Việt dùng nhiều chữ viết tắt (IoU, DPI, PRNG): bắt bọc backtick gây nhiễu.
+doc_markdown = "allow"
+many_single_char_names = "allow"
+
+# Thuật toán ảnh chạy rất chậm ở opt-level 0 ⇒ test/llvm-cov vẫn đủ nhanh.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+# Test đo chất lượng sinh và dò hàng trăm ảnh: lõi ảnh cần tối ưu đầy đủ ngay cả khi test/llvm-cov.
+[profile.dev.package.tsuscan-imaging]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
