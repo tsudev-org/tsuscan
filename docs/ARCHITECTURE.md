@@ -47,7 +47,7 @@ Mọi bước 1-4 chạy **ngoại tuyến**, ảnh không bao giờ rời thi�
 - Định dạng ONNX, suy luận bằng `tract` (Rust thuần ⇒ build từ nguồn được cho F-Droid, chạy WASM cho web). Bản
   desktop có thể bật `ort` (ONNX Runtime) để tăng tốc GPU sau 1.0, sau cờ tính năng.
 - Mô hình KHÔNG nằm trong git. `models/manifest.toml` ghi URL, sha256, kích thước, giấy phép; tải lúc build (APK nhúng
-  mô hình nhỏ) hoặc tải thêm trong app có kiểm sha256 + chữ ký minisign của tsudev.
+  mô hình nhỏ) hoặc tải thêm trong app có kiểm sha256 + chữ ký minisign của TsuDEV.
 - Chỉ dùng mô hình có giấy phép cho phép phân phối lại (Apache-2.0, MIT, BSD); ghi vào `THIRD-PARTY-NOTICES.md`.
 
 ## 5. Bảo mật (chi tiết `docs/THREAT_MODEL.md` từ P4)

@@ -1,7 +1,7 @@
 # Tsu Scan
 
 **Quét tài liệu chuyên nghiệp, xử lý hoàn toàn trên thiết bị, OCR tiếng Việt, đồng bộ mã hóa đầu-cuối.**
-Một sản phẩm của [tsudev](https://tsudev.com). *English below.*
+Một sản phẩm của [TsuDEV](https://tsudev.com). *English below.*
 
 > Trạng thái: đang xây dựng (P0 - nền móng). Kế hoạch: [`docs/PLAN.md`](docs/PLAN.md).
 
@@ -21,4 +21,4 @@ development, see [`docs/PLAN.md`](docs/PLAN.md) (Vietnamese).
 
 ## Giấy phép
 
-[AGPL-3.0-only](LICENSE). Tên "Tsu Scan", "tsudev" và logo không thuộc phạm vi giấy phép, xem [`NOTICE`](NOTICE).
+[AGPL-3.0-only](LICENSE). Tên "Tsu Scan", "TsuDEV" và logo không thuộc phạm vi giấy phép, xem [`NOTICE`](NOTICE).

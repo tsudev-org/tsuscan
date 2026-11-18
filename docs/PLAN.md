@@ -9,7 +9,7 @@
 
 Bộ phần mềm **quét tài liệu chuyên nghiệp, xử lý hoàn toàn trên thiết bị, mã hóa đầu-cuối (E2EE)** chạy trên Android,
 iOS, Windows, macOS, Linux và web (PWA tại `https://tsuscan.tsudev.com/app`), đồng bộ giữa các thiết bị cùng tài khoản
-tsudev. Chất lượng dò mép, làm phẳng trang, lọc ảnh và OCR tiếng Việt ngang hoặc hơn các app tham chiếu
+TsuDEV. Chất lượng dò mép, làm phẳng trang, lọc ảnh và OCR tiếng Việt ngang hoặc hơn các app tham chiếu
 (`docs/FEATURES.md`). Chi phí vận hành 0 đồng.
 
 ## Ràng buộc đã chốt với chủ dự án (18/11/2026)
@@ -36,7 +36,7 @@ tsudev. Chất lượng dò mép, làm phẳng trang, lọc ảnh và OCR tiến
 | P2 | AI trên máy + OCR `crates/tsuscan-ml` | Suy luận ONNX bằng `tract` (Rust thuần, hợp F-Droid): phân đoạn tài liệu, làm phẳng trang cong, tách 2 trang sách, xóa ngón tay; OCR vi+en chọn bằng đo CER trên bộ mẫu tiếng Việt (ứng viên: PaddleOCR PP-OCR, VietOCR, Tesseract 5); bố cục (đoạn, bảng), hướng chữ; mô hình tải về có checksum + chữ ký |
 | P3 | Tài liệu + xuất `crates/tsuscan-doc` | PDF có lớp chữ ẩn tìm được, PDF/A-2b, nén thông minh (MozJPEG, đen trắng CCITT G4/JBIG2), PDF mật khẩu AES-256, DOCX/XLSX/TXT/Markdown/JPEG/PNG/WebP; nhập PDF/ảnh/HEIC; che thông tin xóa hẳn dữ liệu; chữ ký; đọc QR/mã vạch; fuzz bộ đọc PDF |
 | P4 | Kho dữ liệu + mật mã `crates/tsuscan-vault` | SQLite mã hóa (SQLite3MultipleCiphers), lược đồ tài liệu/trang/thư mục/nhãn, FTS5 không dấu trên chữ OCR, tệp trang mã hóa luồng XChaCha20-Poly1305, phân cấp khóa + 24 từ khôi phục, HLC, vector đối chiếu `conformance/`, `docs/THREAT_MODEL.md` |
-| P5 | Khung app Flutter `apps/app` | Cầu `flutter_rust_bridge`, build 5 đích + web, i18n vi/en, token thiết kế tsudev Sáng/Tối, điều hướng (Tài liệu · Quét · Tìm kiếm · Cài đặt), khóa app PIN/sinh trắc, thư viện tài liệu, thư mục/nhãn, tìm không dấu |
+| P5 | Khung app Flutter `apps/app` | Cầu `flutter_rust_bridge`, build 5 đích + web, i18n vi/en, token thiết kế TsuDEV Sáng/Tối, điều hướng (Tài liệu · Quét · Tìm kiếm · Cài đặt), khóa app PIN/sinh trắc, thư viện tài liệu, thư mục/nhãn, tìm không dấu |
 | P6 | Quét bằng camera (Android trước) | Xem trước dò mép thời gian thực, tự chụp khi ổn định, chụp loạt, chế độ Tài liệu/Sách/CCCD 2 mặt/Danh thiếp/Bảng trắng/Ảnh/QR, đèn, nhập từ thư viện; quyền tối thiểu; chạy thật trên máy Android qua adb |
 | P7 | Công cụ sửa + tổ chức | Chỉnh góc có kính lúp, xoay, lọc, sắp xếp/chèn/xóa trang, chú thích, chữ ký, che, ghép/tách tài liệu, xem/sửa/chép chữ OCR, đặt tên thông minh, thùng rác 30 ngày, nhận diện loại giấy tờ (CCCD, hóa đơn, danh thiếp → danh bạ) |
 | P8 | Máy chủ `services/sync-api` | Workers + Hono + D1 + R2: RP OIDC tsudev.com, token app, thiết bị, đồng bộ bản mã theo `rev`, tệp chia khối mã hóa, hạn mức, giới hạn tần suất, xóa tài khoản; triển khai production (cần 👤 token Cloudflare, client OIDC) |
@@ -71,6 +71,6 @@ Android đi trước vì camera là luồng cốt lõi và phát hành miễn ph
   thu hồi sau khi xong.
 - Đăng ký client OIDC `tsuscan` ở tsudev.com, redirect `https://tsuscan.tsudev.com/auth/callback` (P8).
 - Khóa ký Android giữ ngoại tuyến → secret Environment `release` (P12). Duyệt Environment `packages` khi phát hành APT.
-- Duyệt logo riêng (`BRAND_ASSETS.md` mục 15), tạm dùng logo tsudev.
+- Duyệt logo riêng (`BRAND_ASSETS.md` mục 15), tạm dùng logo TsuDEV.
 - Điện thoại Android bật gỡ lỗi USB/không dây cho P6 và P14.
 - Tùy chọn: tài khoản Apple Developer (99 USD/năm) nếu muốn lên App Store.
