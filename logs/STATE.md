@@ -5,8 +5,7 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P2 - AI trên máy + OCR** (phiếu `logs/handover/20261118-02_p1-xong-bat-dau-p2.md`)
-- [ ] P3 - Tài liệu + xuất
+- [ ] **P3 - Tài liệu + xuất** (phiếu `logs/handover/20261118-03_p2-xong-bat-dau-p3.md`)
 - [ ] P4 - Kho dữ liệu + mật mã
 - [ ] P5 - Khung app Flutter
 - [ ] P6 - Quét bằng camera (Android)
@@ -27,6 +26,12 @@
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
+- 18/11/2026 - P2 AI trên máy + OCR (agent-scan, PR `feat/p2-ml`): `crates/tsuscan-ml` trên tract - OCR PP-OCRv5 det +
+  AsterNet (CER 0,51% / 12 trang), hướng trang (24/24), làm phẳng UVDoc (CER trang cong 33,8% → 0,46%), tách 2 trang,
+  xóa ngón tay, bố cục → Markdown; manifest mô hình kiểm sha256/minisign, `scripts/fetch-models.sh`, ADR-0007, phiếu
+  rà soát `docs/security-reviews/20261118-p2-ml.md`, CI job `AI trên máy (tsuscan-ml)`. Benchmark P1 đã chứng minh
+  (31,6 ms CPU/khung). Ruleset `main` bắt buộc PR (phiếu AN1R).
+
 - 18/11/2026 - P1 Lõi ảnh (agent-scan, PR `feat/p1-imaging`): `crates/tsuscan-imaging` (giải mã có giới hạn, dò mép,
   nắn, 7 bộ lọc), `crates/tsuscan-cli`, bộ sinh ảnh có nhãn, IoU TB 0,9977 / 100% ≥ 0,80 trên 150 ảnh, ảnh vàng bộ lọc,
   fuzz + test bền vững, CI `Lõi Rust (crates)`, phiếu rà soát `docs/security-reviews/20261118-p1-imaging.md`.
@@ -37,6 +42,9 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 18/11/2026 - OCR: PP-OCRv5 mobile det + AsterNet rec trên tract; hướng trang PP-LCNet; làm phẳng UVDoc; tách trang/
+  ngón tay/bố cục cổ điển; chưa thêm AI phân đoạn (xem lại ở P6): `docs/adr/0007-*`.
 
 - 18/11/2026 - Thư mục dự án đổi thành `~/projects/tsuscan` (khớp tên repo), chủ dự án yêu cầu.
 - 18/11/2026 - Dò mép P1: nhiều bộ sinh ứng viên (contour, vùng sáng, Hough có hướng) + một bộ chấm điểm cực tính;

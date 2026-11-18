@@ -89,3 +89,49 @@ jobs:
       - run: cargo deny --locked check
       - name: Benchmark biên dịch được
         run: cargo bench --workspace --locked --no-run
+
+  ml:
+    name: AI trên máy (tsuscan-ml)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: '0'
+      LLVM_COV_VERSION: '0.9.1'
+      LLVM_COV_SHA256: '3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522'
+      # Thiếu mô hình thì test TRƯỢT (cục bộ chỉ bỏ qua).
+      TSUSCAN_REQUIRE_MODELS: '1'
+      TSUSCAN_OCR_PAGES: '12'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            target
+          key: ml-${{ runner.os }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          restore-keys: ml-${{ runner.os }}-
+      # Tệp mô hình cache theo hash manifest; script vẫn kiểm lại sha256 từng tệp sau khi khôi phục.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: models/*.onnx
+          key: models-${{ hashFiles('models/manifest.toml') }}
+      - name: Tải mô hình (kiểm sha256)
+        run: ./scripts/fetch-models.sh
+      - name: Toolchain + cargo-llvm-cov (binary ghim checksum)
+        run: |
+          set -euo pipefail
+          rustup component add llvm-tools-preview
+          bin="$HOME/.local/bin"; mkdir -p "$bin"
+          f="cargo-llvm-cov-x86_64-unknown-linux-musl.tar.gz"
+          curl -sSfL -o "$RUNNER_TEMP/$f" "https://github.com/taiki-e/cargo-llvm-cov/releases/download/v${LLVM_COV_VERSION}/$f"
+          echo "${LLVM_COV_SHA256}  $RUNNER_TEMP/$f" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$f" -C "$bin"
+          echo "$bin" >> "$GITHUB_PATH"
+      - run: cargo run -q --locked -p tsuscan-cli -- models
+      - name: Test có mô hình (CER ≤ 3%, hướng trang, làm phẳng) + độ phủ ≥ 85% dòng
+        run: |
+          cargo llvm-cov --package tsuscan-ml --locked --no-report -- --nocapture --test-threads=1
+          cargo llvm-cov report --package tsuscan-ml --ignore-filename-regex 'synth\.rs|tsuscan-imaging|examples' --fail-under-lines 85

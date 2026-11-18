@@ -1,0 +1,32 @@
+[package]
+name = "tsuscan-ml"
+description = "AI trên thiết bị của Tsu Scan: suy luận ONNX bằng tract, OCR tiếng Việt, hướng trang, làm phẳng, bố cục"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[features]
+# Bộ sinh trang chữ có nhãn cho đo CER (test, CLI dev). Không bật trong app.
+synth = ["dep:ab_glyph", "tsuscan-imaging/synth"]
+
+[dependencies]
+tsuscan-imaging.workspace = true
+image.workspace = true
+imageproc.workspace = true
+thiserror.workspace = true
+tract-onnx = "0.23.10"
+sha2 = "0.11.1"
+serde = { version = "1.0.229", features = ["derive"] }
+toml = { version = "1.2.1", default-features = false, features = ["parse", "serde", "std"] }
+minisign-verify = "0.3.0"
+unicode-normalization = "0.1.26"
+ab_glyph = { version = "0.2.32", optional = true }
+
+[dev-dependencies]
+tsuscan-ml = { path = ".", features = ["synth"] }
+
+[lints]
+workspace = true

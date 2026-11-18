@@ -1,0 +1,53 @@
+# Manifest mô hình AI của Tsu Scan. Tệp mô hình KHÔNG nằm trong git: tải bằng `scripts/fetch-models.sh`
+# (kiểm sha256) vào thư mục này. Manifest được nhúng vào app lúc build (crates/tsuscan-ml/src/manifest.rs) và là mỏ neo
+# tin cậy: tệp sai kích thước/sha256 bị từ chối trước khi tới engine suy luận.
+# Chỉ nhận giấy phép trọng số Apache-2.0/MIT/BSD (ADR-0002, ADR-0007). URL ghim theo commit, không theo nhánh.
+schema = 1
+
+[signing]
+# Khóa công khai minisign của tsudev cho mô hình phát hành lại từ GitHub Release (P12). Trống ⇒ chỉ kiểm sha256.
+public_key = ""
+
+[[model]]
+id = "ocr-det"
+name = "PP-OCRv5 mobile det (dò dòng chữ, DB)"
+file = "ppocrv5-mobile-det.onnx"
+url = "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx/resolve/e6f4fa85f00e168c862bc462aebca69eef9b3d3d/inference.onnx"
+sha256 = "a431985659dc921974177a95adcfbb90fd9e51989a5e04d70d0b75f597b6e61d"
+size = 4826518
+license = "Apache-2.0"
+source = "https://huggingface.co/PaddlePaddle/PP-OCRv5_mobile_det_onnx"
+bundled = true
+
+[[model]]
+id = "doc-orientation"
+name = "PP-LCNet x1.0 doc_ori (hướng trang 0/90/180/270)"
+file = "pplcnet-doc-ori.onnx"
+url = "https://huggingface.co/PaddlePaddle/PP-LCNet_x1_0_doc_ori_onnx/resolve/7330ab7039123e46af2dc03154b9969aa412c61d/inference.onnx"
+sha256 = "af9a0a4f317ff0709ce752067807f819cb15d883f8ecad89f28df1c6ee2d9c92"
+size = 6788069
+license = "Apache-2.0"
+source = "https://huggingface.co/PaddlePaddle/PP-LCNet_x1_0_doc_ori_onnx"
+bundled = true
+
+[[model]]
+id = "dewarp"
+name = "UVDoc (làm phẳng trang cong)"
+file = "uvdoc.onnx"
+url = "https://huggingface.co/PaddlePaddle/UVDoc_onnx/resolve/3bcf535371727d11e783101f79a504c68848aae3/inference.onnx"
+sha256 = "54cab30dc2cf347b4f3d6971c833b1c3d84f5ef17280f1f6d15796bff20e63d6"
+size = 31684150
+license = "Apache-2.0"
+source = "https://huggingface.co/PaddlePaddle/UVDoc_onnx"
+bundled = false
+
+[[model]]
+id = "ocr-rec-vi"
+name = "AsterNet v1.0 (nhận dạng dòng tiếng Việt, CTC)"
+file = "asternet-vi.onnx"
+url = "https://huggingface.co/asterxlabs/asternet-vietnamese-ocr/resolve/aec29ab0aaf26061e861cb4b3a301988744c5fa3/asternet.onnx"
+sha256 = "10c96b533e1f64031d73edfddafd7d4b13595544f11891f0531bcd72cb29be80"
+size = 42742163
+license = "MIT"
+source = "https://huggingface.co/asterxlabs/asternet-vietnamese-ocr"
+bundled = true
