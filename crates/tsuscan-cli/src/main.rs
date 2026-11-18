@@ -1,4 +1,6 @@
-//! `tsuscan`: CLI dev cho lõi ảnh và AI trên máy. Không phải sản phẩm phát hành (app nằm ở `apps/app`).
+//! `tsuscan`: CLI dev cho lõi ảnh, AI trên máy và tầng tài liệu. Không phải sản phẩm phát hành (app nằm ở `apps/app`).
+
+mod doc_cmd;
 
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -15,7 +17,7 @@ use tsuscan_imaging::{Quad, decode, detect};
 #[command(
     name = "tsuscan",
     version,
-    about = "CLI dev của Tsu Scan (lõi ảnh + AI trên máy)"
+    about = "CLI dev của Tsu Scan (lõi ảnh + AI trên máy + tài liệu)"
 )]
 struct Cli {
     #[command(subcommand)]
@@ -112,6 +114,8 @@ enum Cmd {
     },
     /// Kiểm toàn vẹn các tệp mô hình theo manifest.
     Models,
+    #[command(flatten)]
+    Doc(doc_cmd::DocCmd),
 }
 
 fn quad_json(q: &Quad) -> serde_json::Value {
@@ -274,8 +278,8 @@ fn run_ml(cmd: Cmd) -> Result<(), String> {
             println!("Đã sinh {count} trang vào {}", out.display());
         }
         Cmd::Models => check_models()?,
-        Cmd::Detect { .. } | Cmd::Scan { .. } | Cmd::Synth { .. } => {
-            return Err("lệnh lõi ảnh xử lý ở run()".into());
+        Cmd::Detect { .. } | Cmd::Scan { .. } | Cmd::Synth { .. } | Cmd::Doc(_) => {
+            return Err("lệnh lõi ảnh/tài liệu xử lý ở run()".into());
         }
     }
     Ok(())
@@ -347,6 +351,7 @@ fn run(cli: Cli) -> Result<(), String> {
             std::fs::write(out.join("labels.json"), text + "\n").map_err(|e| e.to_string())?;
             println!("Đã sinh {count} ảnh vào {}", out.display());
         }
+        Cmd::Doc(d) => doc_cmd::run(d)?,
         other => run_ml(other)?,
     }
     Ok(())

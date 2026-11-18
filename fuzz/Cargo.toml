@@ -13,6 +13,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 tsuscan-imaging = { path = "../crates/tsuscan-imaging" }
+tsuscan-doc = { path = "../crates/tsuscan-doc" }
 image = { version = "0.25.10", default-features = false }
 
 [[bin]]
@@ -25,6 +26,20 @@ bench = false
 [[bin]]
 name = "detect"
 path = "fuzz_targets/detect.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "pdf_import"
+path = "fuzz_targets/pdf_import.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "barcode"
+path = "fuzz_targets/barcode.rs"
 test = false
 doc = false
 bench = false

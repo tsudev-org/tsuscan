@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/tsuscan-imaging", "crates/tsuscan-ml", "crates/tsuscan-cli"]
+members = ["crates/tsuscan-imaging", "crates/tsuscan-ml", "crates/tsuscan-doc", "crates/tsuscan-cli"]
 exclude = ["fuzz"]
 
 [workspace.package]
@@ -14,6 +14,7 @@ publish = false
 [workspace.dependencies]
 tsuscan-imaging = { path = "crates/tsuscan-imaging" }
 tsuscan-ml = { path = "crates/tsuscan-ml" }
+tsuscan-doc = { path = "crates/tsuscan-doc" }
 image = { version = "0.25.10", default-features = false, features = ["jpeg", "png", "webp"] }
 imageproc = { version = "0.27.0", default-features = false }
 nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
@@ -54,6 +55,10 @@ opt-level = 3
 
 # Test đo CER chạy mô hình ONNX trên nhiều trang: cần tối ưu như lõi ảnh.
 [profile.dev.package.tsuscan-ml]
+opt-level = 3
+
+# Nén JPEG/G4, mã hóa AES và vẽ PDF nhập vào chạy trên trang nhiều MP: tối ưu như lõi ảnh.
+[profile.dev.package.tsuscan-doc]
 opt-level = 3
 
 [profile.release]

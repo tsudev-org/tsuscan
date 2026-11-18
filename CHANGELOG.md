@@ -4,6 +4,17 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 
 ## [Chưa phát hành]
 
+### Số đo P3 (19/11/2026, x86_64 4 nhân, máy dùng chung tải 7-9)
+
+| Chỉ tiêu | Đo được |
+| --- | --- |
+| OCR thật → PDF lớp chữ → `pdftotext` (trang sinh tất định) | CER so chữ chuẩn **0,66%**; lớp chữ so chữ OCR **0,00%** (không mất/đổi ký tự) |
+| Trang A4 300 DPI đen trắng (CCITT G4) | 19,4 KB/trang; vẽ lại khớp từng điểm ảnh |
+| Trang A4 150 DPI màu (JPEG q80) | 92 KB/trang |
+| Đối chiếu độc lập | qpdf (libqpdf 12.4): cú pháp OK, R6/V5 AESV3 256 bit, mở được bằng mật khẩu người dùng và chủ, từ chối mật khẩu sai; pikepdf: PDF/A `2B`; poppler: phông nhúng + ToUnicode, chữ Việt có dấu đúng; python-docx/openpyxl đọc đúng DOCX/XLSX |
+| Bom giải nén (PDF 1 MB nở 1 GiB) | Trước P3: hayro chiếm 1,07 GB. Sau lớp chặn: từ chối sau 0,04-0,13 s, RSS đỉnh tăng < 0,2 MiB |
+| 300 PDF đột biến tất định | 0 panic thoát ra, 182 vẫn mở được |
+
 ### Số đo P2 (18/11/2026, x86_64 4 nhân, máy dùng chung tải 6-13)
 
 | Chỉ tiêu | Ngưỡng | Đo được |
@@ -17,6 +28,23 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 | Thời gian nhận dạng hình dạng ký hiệu (đã bỏ) | - | 0,32 s (256) - 1,35 s (1.024) mỗi dòng ⇒ chuyển sang xô chiều rộng 128 px |
 
 ### Thêm
+- Tầng tài liệu `crates/tsuscan-doc` (P3, ADR-0008):
+  - Ghi PDF: ảnh trang nén thông minh (tự nhận màu/xám/đen trắng → JPEG màu, JPEG 1 kênh, CCITT G4 không mất dữ
+    liệu; trần DPI theo mức chất lượng), lớp chữ OCR ẩn tìm/chép được (phông "không nét" tự sinh, Identity-H +
+    ToUnicode, giãn theo bề rộng dòng, xoay theo dòng nghiêng).
+  - PDF/A-2b (XMP khớp Info, OutputIntent sRGB ICC tự sinh, ID trailer) và PDF mật khẩu AES-256 (R6, quyền in/sửa/
+    chép/chú thích, mật khẩu chủ); hai tùy chọn loại trừ nhau theo chuẩn.
+  - Xuất DOCX (tiêu đề, đoạn, bảng có viền, ảnh trang khi chưa OCR), XLSX (mỗi bảng một trang tính, số kiểu Việt Nam
+    thành số, giữ số 0 đầu của CCCD/điện thoại), TXT, Markdown, JPEG/PNG/WebP (không EXIF).
+  - Nhập PDF (hayro, vẽ trang thành ảnh, mật khẩu, chọn trang), JPEG/PNG/WebP; HEIC/HEIF/AVIF qua bộ giải mã hệ điều
+    hành (`import::from_rgba`).
+  - Chặn bom giải nén hai lớp + trần kích thước ảnh/trang/số trang, `catch_unwind` tại biên bộ đọc bên thứ ba.
+  - Che thông tin xóa hẳn (ghi đè điểm ảnh + cắt chữ OCR, tìm theo chuỗi), chữ ký hình (tách nét mực, đóng lên trang),
+    đọc QR/mã vạch (QR/VietQR, Code 128, EAN, DataMatrix, PDF417, Aztec).
+  - CLI: `pdf` (`--ocr --pdfa --password-env -q -c`), `export` (.docx .xlsx .txt .md), `import`, `redact`, `barcode`.
+  - Test đối chiếu bằng hayro + poppler + qpdf (`TSUSCAN_REQUIRE_PDF_TOOLS=1` trên CI), test đột biến, đích fuzz
+    `pdf_import`/`barcode`, phiếu rà soát `docs/security-reviews/20261119-p3-doc.md`; CI: độ phủ `tsuscan-doc` ≥ 85%,
+    job AI chạy thêm OCR → PDF → pdftotext.
 - AI trên máy `crates/tsuscan-ml` (P2), suy luận ONNX bằng tract (Rust thuần):
   - OCR tiếng Việt/Anh: dò dòng PP-OCRv5 mobile det + hậu xử lý DB, nhận dạng AsterNet (CTC, 227 lớp), thứ tự đọc
     theo hàng, tự đảo màu chữ sáng nền tối, chia đoạn dòng dài. Chọn bằng số đo (ADR-0007).

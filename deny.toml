@@ -9,6 +9,10 @@ ignore = [
   # (sinh trang mẫu test từ font OFL có sẵn trong repo, không đọc font của người dùng, không vào app).
   # Hạn: xem lại ở P13 hoặc khi có bản thay (skrifa); app KHÔNG được bật `synth`. Ghi 18/11/2026.
   { id = "RUSTSEC-2026-0192", reason = "chỉ dùng sinh dữ liệu test từ font trong repo; không vào app" },
+  # chrono không còn bảo trì - KHÔNG phải lỗ hổng. Phụ thuộc bắt buộc của rxing (đọc mã vạch, tsuscan-doc), chỉ dùng
+  # gắn mốc thời gian vào kết quả giải mã; phần phân tích ngày giờ từ dữ liệu mã (`client_support`) đã TẮT.
+  # Hạn: xem lại ở P13 hoặc khi rxing chuyển sang jiff/time. Ghi 19/11/2026.
+  { id = "RUSTSEC-2026-0543", reason = "rxing chỉ dùng chrono gắn mốc thời gian; không phân tích ngày giờ không tin cậy" },
 ]
 
 [licenses]
@@ -22,6 +26,9 @@ allow = [
   "Zlib",
   "Unicode-3.0",
   "MPL-2.0",
+  # jpeg-encoder ((MIT OR Apache-2.0) AND IJG): giấy phép thư viện JPEG độc lập - dễ dãi, chỉ yêu cầu ghi công
+  # (ghi ở THIRD-PARTY-NOTICES.md). Thêm 19/11/2026 cho P3.
+  "IJG",
 ]
 confidence-threshold = 0.9
 # Crate của chính repo (publish = false, AGPL-3.0-only) không cần nằm trong danh sách cho phép.
