@@ -25,3 +25,4 @@ workspace = true
 
 [dev-dependencies]
 serde_json.workspace = true
+unicode-normalization = "0.1.26"

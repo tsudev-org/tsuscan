@@ -56,8 +56,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
-      - name: Công cụ đối chiếu PDF (poppler-utils, qpdf - kho Ubuntu đã ký)
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends poppler-utils qpdf
+      - name: Công cụ đối chiếu PDF (poppler-utils, qpdf) + libsodium kiểm vector mật mã (kho Ubuntu đã ký)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends poppler-utils qpdf libsodium23
       - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: |
@@ -86,11 +86,18 @@ jobs:
           echo "$bin" >> "$GITHUB_PATH"
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - name: Test + độ phủ (≥ 85% dòng cho tsuscan-imaging, tsuscan-doc)
+      - name: Test + độ phủ (≥ 85% dòng cho tsuscan-imaging, tsuscan-doc, tsuscan-vault)
         run: |
           cargo llvm-cov --workspace --locked --no-report -- --nocapture
           cargo llvm-cov report --package tsuscan-imaging --ignore-filename-regex 'synth\.rs|tsuscan-cli' --fail-under-lines 85
           cargo llvm-cov report --package tsuscan-doc --ignore-filename-regex 'tsuscan-imaging|tsuscan-ml|tsuscan-cli|examples' --fail-under-lines 85
+          cargo llvm-cov report --package tsuscan-vault --ignore-filename-regex 'tsuscan-imaging|tsuscan-ml|tsuscan-doc|tsuscan-cli|examples' --fail-under-lines 85
+      - name: Vector mật mã kho (ADR-0009) - đúng bản sinh hiện tại + libsodium độc lập giải được
+        run: |
+          set -euo pipefail
+          cargo run -q --locked -p tsuscan-vault --example gen_conformance > "$RUNNER_TEMP/vault-v1.json"
+          diff -u conformance/vault-v1.json "$RUNNER_TEMP/vault-v1.json"
+          python3 -I conformance/verify_libsodium.py conformance/vault-v1.json
       - run: cargo deny --locked check
       - name: Benchmark biên dịch được
         run: cargo bench --workspace --locked --no-run

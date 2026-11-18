@@ -5,8 +5,7 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P4 - Kho dữ liệu + mật mã** (phiếu `logs/handover/20261119-04_p3-xong-bat-dau-p4.md`)
-- [ ] P5 - Khung app Flutter
+- [ ] **P5 - Khung app Flutter** (phiếu `logs/handover/20261119-05_p4-xong-bat-dau-p5.md`)
 - [ ] P6 - Quét bằng camera (Android)
 - [ ] P7 - Công cụ sửa + tổ chức
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
@@ -21,9 +20,16 @@
 
 | Task | Agent | Bắt đầu |
 | --- | --- | --- |
-| P4 - Kho dữ liệu + mật mã (`feat/p4-vault`) | agent-scan | 04:43 19/11/2026 |
+| (trống) | | |
 
 ## Đã hoàn thành (mới nhất trên cùng)
+
+- 19/11/2026 - P4 Kho dữ liệu + mật mã (agent-scan, PR `feat/p4-vault`): `crates/tsuscan-vault` - SQLite3MC
+  (ChaCha20-Poly1305) qua bản vá `third_party/libsqlite3-sys`, lược đồ v1 tài liệu/trang/thư mục/nhãn + bia mộ/HLC,
+  FTS5 không dấu (khớp đúng dấu xếp trên), tệp trang mã hóa luồng v1, phong bì v1, Argon2id + 24 từ BIP39, HLC;
+  ADR-0009, `docs/THREAT_MODEL.md`, phiếu rà soát `docs/security-reviews/20261119-p4-vault.md`, vector
+  `conformance/vault-v1.json` (libsodium độc lập kiểm đạt). Đo `.so` arm64: SQLite3MC 1,37 MB vs SQLCipher 5,48 MB;
+  độ phủ 93,02%.
 
 - 19/11/2026 - P3 Tài liệu + xuất (agent-scan, PR `feat/p3-doc`): `crates/tsuscan-doc` - PDF lớp chữ OCR ẩn (phông
   không nét tự sinh), PDF/A-2b, AES-256 R6, nén tự nhận màu/xám/đen trắng (JPEG/G4), DOCX/XLSX/TXT/MD/ảnh, nhập PDF
@@ -47,6 +53,9 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 19/11/2026 - Kho: SQLite3MC qua bản vá libsqlite3-sys (loại SQLCipher +4 MB/ABI, loại mã hóa tầng ứng dụng vì chỉ
+  mục FTS lộ chữ OCR); phong bì/luồng v1, Argon2id 3/64 MiB sàn 2/19 MiB, KEK khôi phục HKDF: `docs/adr/0009-*`.
 
 - 19/11/2026 - Tầng tài liệu: ghi PDF tự làm trên pdf-writer (mã hóa R6 tự cài), nhập PDF bằng hayro vẽ thành ảnh,
   G4 thay JBIG2, JPEG thuần Rust thay MozJPEG, HEIC qua bộ giải mã hệ điều hành: `docs/adr/0008-*`.

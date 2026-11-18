@@ -7,6 +7,10 @@ edition = "2024"
 license = "AGPL-3.0-only"
 publish = false
 
+# Như workspace gốc: SQLite3MC thay SQLite gốc (ADR-0009).
+[patch.crates-io]
+libsqlite3-sys = { path = "../third_party/libsqlite3-sys" }
+
 [package.metadata]
 cargo-fuzz = true
 
@@ -14,6 +18,7 @@ cargo-fuzz = true
 libfuzzer-sys = "0.4"
 tsuscan-imaging = { path = "../crates/tsuscan-imaging" }
 tsuscan-doc = { path = "../crates/tsuscan-doc" }
+tsuscan-vault = { path = "../crates/tsuscan-vault" }
 image = { version = "0.25.10", default-features = false }
 
 [[bin]]
@@ -45,3 +50,10 @@ doc = false
 bench = false
 
 [workspace]
+
+[[bin]]
+name = "vault_open"
+path = "fuzz_targets/vault_open.rs"
+test = false
+doc = false
+bench = false

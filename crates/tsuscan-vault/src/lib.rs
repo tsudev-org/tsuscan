@@ -17,3 +17,4 @@ pub mod stream;
 
 pub use error::{Result, VaultError};
 pub use secret::Key32;
+pub use store::Vault;

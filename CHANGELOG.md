@@ -4,6 +4,16 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 
 ## [Chưa phát hành]
 
+### Số đo P4 (19/11/2026, kho + mật mã `tsuscan-vault`)
+
+| Chỉ tiêu | Đo được |
+| --- | --- |
+| `.so` arm64 (NDK 28.2, `-Os`, LTO): SQLite thường / **SQLite3MC** / SQLCipher+OpenSSL | 1,50 MB / **1,37 MB** / 5,48 MB (ADR-0009) |
+| Đối chiếu độc lập vector `conformance/vault-v1.json` | libsodium 1.0.18 (hệ điều hành) giải đúng 5 phong bì + 3 luồng, Argon2id khớp; HKDF khớp `hashlib`; BIP39 khớp vector Trezor |
+| Rò bản rõ ra đĩa (CSDL, WAL, tệp trang) | 0 (quét mọi tệp trong thư mục kho) |
+| Đột biến phong bì/luồng (3.300) + chuỗi ngẫu nhiên (5.000) | 0 chấp nhận nhầm, 0 panic |
+| Độ phủ dòng `tsuscan-vault` | 93,02% |
+
 ### Số đo P3 (19/11/2026, x86_64 4 nhân, máy dùng chung tải 7-9)
 
 | Chỉ tiêu | Đo được |

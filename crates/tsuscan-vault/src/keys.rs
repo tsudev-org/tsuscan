@@ -109,7 +109,12 @@ impl RecoveryPhrase {
         Self::from_entropy(&entropy)
     }
 
-    fn from_entropy(entropy: &[u8; 32]) -> Result<Self> {
+    /// Cụm từ cho entropy cho trước. CHỈ dùng cho vector đối chiếu/test.
+    ///
+    /// # Errors
+    /// [`VaultError::RecoveryPhrase`] (không xảy ra với 32 byte).
+    #[doc(hidden)]
+    pub fn from_entropy(entropy: &[u8; 32]) -> Result<Self> {
         let m = Mnemonic::from_entropy(entropy).map_err(|_| VaultError::RecoveryPhrase)?;
         Ok(Self(Zeroizing::new(m.words().collect::<Vec<_>>().join(" "))))
     }
@@ -346,6 +351,19 @@ mod tests {
         // Vector BIP39 12 từ hợp lệ (tổng kiểm đúng) nhưng không đủ 24 từ ⇒ phải bị từ chối.
         let twelve = format!("{}about", "abandon ".repeat(11));
         assert!(RecoveryPhrase::parse(&twelve).is_err());
+    }
+
+    #[test]
+    fn bip39_official_vector() {
+        // Vector chính thức (trezor/python-mnemonic vectors.json): entropy 32 byte 0x00 ⇒ "abandon" x23 + "art".
+        let p = RecoveryPhrase::from_entropy(&[0u8; 32]).unwrap_or_else(|_| unreachable!());
+        assert_eq!(p.as_str(), format!("{}art", "abandon ".repeat(23)));
+        let p = RecoveryPhrase::from_entropy(&[0x7f; 32]).unwrap_or_else(|_| unreachable!());
+        assert_eq!(
+            p.as_str(),
+            "legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful \
+             legal winner thank year wave sausage worth title"
+        );
     }
 
     #[test]
