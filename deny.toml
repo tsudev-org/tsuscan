@@ -29,6 +29,10 @@ allow = [
   # jpeg-encoder ((MIT OR Apache-2.0) AND IJG): giấy phép thư viện JPEG độc lập - dễ dãi, chỉ yêu cầu ghi công
   # (ghi ở THIRD-PARTY-NOTICES.md). Thêm 19/11/2026 cho P3.
   "IJG",
+  # sqlite3mc-src (MIT AND CC0-1.0 AND Unlicense AND ...): SQLite là public domain (ghi dạng CC0/Unlicense), lớp mã
+  # hóa SQLite3MC là MIT. Cả hai đều cống hiến/dễ dãi, không ràng buộc. Thêm 19/11/2026 cho P4 (ADR-0009).
+  "CC0-1.0",
+  "Unlicense",
 ]
 confidence-threshold = 0.9
 # Crate của chính repo (publish = false, AGPL-3.0-only) không cần nằm trong danh sách cho phép.

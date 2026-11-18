@@ -40,6 +40,13 @@ trong CI (danh sách cho phép: `deny.toml`). Cập nhật file này trong cùng
 | PP-LCNet x1.0 doc_ori | Apache-2.0 | PaddlePaddle - huggingface.co/PaddlePaddle/PP-LCNet_x1_0_doc_ori_onnx | Hướng trang |
 | UVDoc | Apache-2.0 | PaddlePaddle (mô hình UVDoc của Verhoeven và cộng sự) - huggingface.co/PaddlePaddle/UVDoc_onnx | Làm phẳng trang cong |
 
+## Mã nguồn chép vào repo
+
+| Thành phần | Giấy phép | Nguồn | Ghi chú |
+| --- | --- | --- | --- |
+| `third_party/libsqlite3-sys` (0.40.0) | MIT | rusqlite - github.com/rusqlite/rusqlite | Vá để biên dịch SQLite3MC (`TSUSCAN.md` trong thư mục) |
+| SQLite3MultipleCiphers 2.6.1 (qua crate `sqlite3mc-src`) | MIT (lớp mã hóa), SQLite: public domain | Ulrich Telle - github.com/utelle/SQLite3MultipleCiphers | Kho mã hóa trên máy |
+
 ## Font trong `testdata/fonts/` (chỉ dùng sinh bộ mẫu test, không đóng gói vào app)
 
 | Font | Giấy phép | Bản văn |
