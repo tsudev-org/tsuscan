@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tsuscan/src/bootstrap/platform.dart';
 import 'package:tsuscan/src/data/memory_library.dart';
+import 'package:tsuscan/src/data/scan_engine.dart';
 import 'package:tsuscan/src/services/app_lock.dart';
 import 'package:tsuscan/src/services/key_storage.dart';
 import 'package:tsuscan/src/services/settings_store.dart';
@@ -40,6 +41,8 @@ final class FakePlatform implements PlatformBindings {
   final FakeBiometric biometric = FakeBiometric();
   @override
   String get coreVersion => '0.1.0';
+  @override
+  ScanEngine scan = const MemoryScanEngine();
   LibraryOpenResult result = const LibraryKeyMissing();
   bool useResult = false;
   int resets = 0;

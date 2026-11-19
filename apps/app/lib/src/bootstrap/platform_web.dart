@@ -1,4 +1,5 @@
 import '../data/memory_library.dart';
+import '../data/scan_engine.dart';
 import '../services/app_lock.dart';
 import '../services/key_storage.dart';
 import 'platform.dart';
@@ -15,6 +16,8 @@ final class _WebBindings implements PlatformBindings {
   final BiometricAuth biometric = const _NoBiometric();
   @override
   String get coreVersion => 'web-preview';
+  @override
+  final ScanEngine scan = const MemoryScanEngine();
 
   @override
   Future<LibraryOpenResult> openLibrary() async => LibraryReady(MemoryLibraryRepository());

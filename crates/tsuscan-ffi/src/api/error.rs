@@ -76,6 +76,7 @@ impl From<ImagingError> for ApiError {
     fn from(e: ImagingError) -> Self {
         let kind = match e {
             ImagingError::TooLarge { .. } => ApiErrorKind::ImageTooLarge,
+            ImagingError::InvalidQuad(_) | ImagingError::InvalidArgument(_) => ApiErrorKind::InvalidInput,
             _ => ApiErrorKind::UnsupportedImage,
         };
         Self::new(kind, e.to_string())
