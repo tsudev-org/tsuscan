@@ -1,3 +1,12 @@
 # Cấu hình gitleaks: dùng toàn bộ luật mặc định.
 [extend]
 useDefault = true
+
+# Ngoại lệ theo đường dẫn, chủ dự án duyệt 19/11/2026 (P4, PR #7). Mỗi dòng có lý do:
+# - conformance/vault-v1.json: khóa/nonce/muối CỐ ĐỊNH, công khai của vector đối chiếu (ADR-0009 mục 3.7), sinh bởi
+#   crates/tsuscan-vault/examples/gen_conformance.rs - không phải khóa thật, phải giữ nguyên để CI phát hiện lệch định dạng.
+# - third_party/libsqlite3-sys/: mã nguồn gốc của rusqlite/SQLite chép nguyên bản (sqlite3ext.h có `sqlite3_api->...`
+#   khớp luật generic-api-key), không chứa bí mật của dự án.
+[[allowlists]]
+description = "Vector đối chiếu công khai + mã nguồn bên thứ ba chép nguyên bản"
+paths = ['''^conformance/vault-v1\.json$''', '''^third_party/libsqlite3-sys/''']
