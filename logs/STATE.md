@@ -5,7 +5,8 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P6 - Quét bằng camera (Android)** (phiếu `logs/handover/20261119-06_p5-xong-bat-dau-p6.md`)
+- [ ] **P6 - Quét bằng camera (Android)** - lõi + giao diện xong, chờ chạy thật qua adb + chế độ Sách/QR (phiếu
+  `logs/handover/20261119-07_p6-camera-cho-chay-that.md`)
 - [ ] P7 - Công cụ sửa + tổ chức
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
 - [ ] P9 - Đồng bộ trong app
@@ -19,7 +20,7 @@
 
 | Task | Agent | Bắt đầu |
 | --- | --- | --- |
-| (trống) | | |
+| P6 Quét bằng camera (`feat/p6-camera`) | agent-scan | 19/11/2026 |
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
@@ -60,6 +61,13 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 19/11/2026 - App: `AppScope` + màn khóa nằm trong `MaterialApp.builder` (phủ mọi route/hộp thoại) - sửa lỗi màn khóa
+  không che hộp thoại có từ P5. Quét: lõi Rust dò trên kênh Y khung xem trước, ảnh chụp giải mã một lần (opaque, xóa
+  trắng khi giải phóng), phiên chụp loạt chỉ giữ JPEG gốc; plugin `camera` chính chủ, quyền duy nhất `CAMERA`
+  (`docs/security-reviews/20261119-p6-camera.md`).
+- 19/11/2026 - Chủ dự án cho agent tự chọn giải pháp an toàn tối ưu ⇒ đóng 24 cảnh báo CodeQL dương tính giả (khóa/nonce
+  cố định trong test/vector; bộ đệm `[0u8; N]` được `fill_random` ghi đè).
 
 - 19/11/2026 - App: FRB 2.13.0 + cargokit, ghim cùng bản 4 nơi + test chặn lệch; khóa CSDL trong kho bí mật HĐH; PIN
   là khóa giao diện (Argon2id, chờ tăng dần); web chưa lưu dữ liệu tới P11: `docs/adr/0010-*`.

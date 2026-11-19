@@ -15,6 +15,7 @@ use tsuscan_vault::{Key32, Vault};
 use zeroize::Zeroizing;
 
 use super::error::{ApiError, ApiErrorKind, ApiResult};
+use super::scan::{CapturedImage, MAX_SCAN_SIDE, SCAN_JPEG_QUALITY};
 
 /// Chất lượng JPEG khi nhập ảnh (đủ cho OCR, ~1/3 dung lượng PNG).
 const IMPORT_JPEG_QUALITY: u8 = 88;
@@ -388,6 +389,33 @@ impl LibraryHandle {
         Ok(self.lock().add_page(&document_id, page)?)
     }
 
+    /// Lưu trang vừa quét làm trang cuối: nắn theo `corners` (8 số chuẩn hóa, rỗng = cả khung), áp bộ lọc `filter`,
+    /// cạnh dài ≤ [`MAX_SCAN_SIDE`], mã hóa JPEG một lần rồi ghi mã hóa vào kho. Trả id trang.
+    ///
+    /// # Errors
+    /// `InvalidInput` (góc/bộ lọc sai), `UnsupportedImage`, `NotFound`, `Storage`.
+    pub fn add_scanned_page(
+        &self,
+        document_id: String,
+        image: &CapturedImage,
+        corners: Vec<f64>,
+        filter: String,
+    ) -> ApiResult<String> {
+        let page = image.process(&corners, &filter, MAX_SCAN_SIDE)?;
+        let (w, h) = (page.width(), page.height());
+        let jpeg = encode_jpeg(&page, SCAN_JPEG_QUALITY)?;
+        drop(page);
+        let page = NewPage {
+            image: &jpeg,
+            width: w,
+            height: h,
+            dpi: 0,
+            ocr_text: "",
+            ocr_blob: None,
+        };
+        Ok(self.lock().add_page(&document_id, page)?)
+    }
+
     /// Ảnh thu nhỏ JPEG của trang, cạnh dài ≤ `max_side` (kẹp 64..=1024). Giải mã trong Rust, Dart chỉ nhận ảnh nhỏ.
     ///
     /// # Errors
@@ -454,12 +482,16 @@ fn doc_dto(d: tsuscan_vault::store::DocumentInfo) -> DocumentDto {
     }
 }
 
-fn encode_jpeg(img: &DynamicImage, quality: u8) -> ApiResult<Vec<u8>> {
-    let rgb = img.to_rgb8();
+/// Mã hóa JPEG không kèm siêu dữ liệu. Ảnh xám (bộ lọc Xám/Đen trắng) giữ một kênh: nhỏ hơn ~3 lần.
+pub(crate) fn encode_jpeg(img: &DynamicImage, quality: u8) -> ApiResult<Vec<u8>> {
     let mut out = Cursor::new(Vec::new());
     let enc = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut out, quality);
-    rgb.write_with_encoder(enc)
-        .map_err(|_| ApiError::new(ApiErrorKind::Internal, "mã hóa JPEG"))?;
+    let written = match img {
+        DynamicImage::ImageLuma8(g) => g.write_with_encoder(enc),
+        DynamicImage::ImageRgb8(rgb) => rgb.write_with_encoder(enc),
+        other => other.to_rgb8().write_with_encoder(enc),
+    };
+    written.map_err(|_| ApiError::new(ApiErrorKind::Internal, "mã hóa JPEG"))?;
     let bytes = out.into_inner();
     debug_assert_eq!(image::guess_format(&bytes).ok(), Some(ImageFormat::Jpeg));
     Ok(bytes)

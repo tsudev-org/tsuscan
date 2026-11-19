@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import '../utils/vi_text.dart';
 import 'library_repository.dart';
+import 'scan_engine.dart';
 
 /// Kho trong bộ nhớ: web xem trước (chưa có lõi WASM - P11) và test giao diện. Không lưu gì xuống đĩa.
 final class MemoryLibraryRepository implements LibraryRepository {
@@ -165,6 +166,10 @@ final class MemoryLibraryRepository implements LibraryRepository {
     _docs[documentId] = d.copyWith(pageCount: list.length, updatedMs: _now);
     return id;
   }
+
+  @override
+  Future<String> addScannedPage(String documentId, ScanCapture capture, ScanQuad? quad, ScanFilter filter) async =>
+      importImagePage(documentId, Uint8List.fromList(await capture.render(quad, filter, 2048)));
 
   static bool _looksLikeImage(Uint8List b) =>
       (b.length > 3 && b[0] == 0xFF && b[1] == 0xD8) ||

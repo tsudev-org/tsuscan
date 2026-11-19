@@ -40,3 +40,7 @@ cast_sign_loss = "allow"
 doc_markdown = "allow"
 # API cầu nối nhận giá trị sở hữu (String, Vec<u8>) theo yêu cầu của flutter_rust_bridge.
 needless_pass_by_value = "allow"
+
+[dev-dependencies]
+# Ảnh cảnh có nhãn (P1) để kiểm dò mép/nắn qua đúng bề mặt API.
+tsuscan-imaging = { workspace = true, features = ["synth"] }

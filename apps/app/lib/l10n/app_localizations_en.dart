@@ -217,13 +217,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scanTitle => 'Scan documents';
 
   @override
-  String get scanComingBody =>
-      'Camera scanning with edge detection, auto-capture and batch mode arrives in the next update. For now you can import photos you already took: they are encrypted on this device and their metadata (GPS location, camera) is stripped.';
-
-  @override
-  String get scanImportToNew => 'Import images as a new document';
-
-  @override
   String get searchHint => 'Search titles or page text (accents optional)';
 
   @override
@@ -393,4 +386,202 @@ class AppLocalizationsEn extends AppLocalizations {
 
     return '$range (filtered from $allString)';
   }
+
+  @override
+  String get scanIntro =>
+      'Pick a mode and shoot. Page edges are detected and straightened on this device; images never leave it and are encrypted when saved.';
+
+  @override
+  String get scanStartCamera => 'Scan with camera';
+
+  @override
+  String get scanImport => 'Import existing photos';
+
+  @override
+  String get scanCameraUnsupported =>
+      'In-app camera scanning is not available on this device yet. Import existing photos instead - edges are still detected and straightened.';
+
+  @override
+  String get scanModeLabel => 'Scan mode';
+
+  @override
+  String get scanModeDocument => 'Document';
+
+  @override
+  String get scanModeIdCard => 'ID card (2 sides)';
+
+  @override
+  String get scanModeBusinessCard => 'Business card';
+
+  @override
+  String get scanModeWhiteboard => 'Whiteboard';
+
+  @override
+  String get scanModePhoto => 'Photo';
+
+  @override
+  String get scanPermissionDenied =>
+      'Tsu Scan is not allowed to use the camera. Turn on the Camera permission for Tsu Scan in your device settings and try again, or import existing photos.';
+
+  @override
+  String get scanNoCamera => 'No camera found on this device.';
+
+  @override
+  String get scanCameraError => 'Could not open the camera. Close other apps using it and try again.';
+
+  @override
+  String get scanHintFind => 'Fit the document in the frame';
+
+  @override
+  String get scanHintHold => 'Hold still…';
+
+  @override
+  String get scanHintNext => 'Captured - place the next page';
+
+  @override
+  String get scanHintManual => 'Press the shutter when ready';
+
+  @override
+  String get scanSideFront => 'Front side';
+
+  @override
+  String get scanSideBack => 'Back side';
+
+  @override
+  String get scanAutoCapture => 'Auto capture';
+
+  @override
+  String get scanFlashOff => 'Flash: off';
+
+  @override
+  String get scanFlashAuto => 'Flash: auto';
+
+  @override
+  String get scanFlashTorch => 'Flash: always on';
+
+  @override
+  String get scanShutter => 'Capture';
+
+  @override
+  String scanPageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count pages', one: '1 page');
+    return '$_temp0';
+  }
+
+  @override
+  String get scanDone => 'Done';
+
+  @override
+  String get scanDiscardTitle => 'Discard captured pages?';
+
+  @override
+  String scanDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unsaved pages will be deleted.',
+      one: '1 unsaved page will be deleted.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scanDiscard => 'Discard';
+
+  @override
+  String get scanReviewTitle => 'Review pages';
+
+  @override
+  String get scanAddMore => 'Capture more';
+
+  @override
+  String get scanSaveDocument => 'Save document';
+
+  @override
+  String scanSaving(int done, int total) {
+    return 'Saving $done/$total…';
+  }
+
+  @override
+  String get scanProcessing => 'Processing images…';
+
+  @override
+  String scanPageN(int n) {
+    return 'Page $n';
+  }
+
+  @override
+  String get scanEmptyReview => 'No pages yet.';
+
+  @override
+  String get scanEditTitle => 'Edit page';
+
+  @override
+  String get scanEditPage => 'Adjust corners and filter';
+
+  @override
+  String get scanDeletePage => 'Delete page';
+
+  @override
+  String get scanMoveUp => 'Move up';
+
+  @override
+  String get scanMoveDown => 'Move down';
+
+  @override
+  String get scanFullFrame => 'Full frame';
+
+  @override
+  String get scanRedetect => 'Detect again';
+
+  @override
+  String get scanNotFound => 'No page edges found - drag the four corners by hand.';
+
+  @override
+  String get scanInvalidQuad => 'The four corners must form a convex shape.';
+
+  @override
+  String get scanShowResult => 'Show result';
+
+  @override
+  String get scanShowCorners => 'Adjust corners';
+
+  @override
+  String get scanFilterLabel => 'Filter';
+
+  @override
+  String get scanFilterOriginal => 'Original';
+
+  @override
+  String get scanFilterAuto => 'Auto';
+
+  @override
+  String get scanFilterColor => 'Color';
+
+  @override
+  String get scanFilterGray => 'Grayscale';
+
+  @override
+  String get scanFilterBw => 'Black & white';
+
+  @override
+  String get scanFilterShadow => 'Remove shadows';
+
+  @override
+  String get scanFilterWhiteboard => 'Whiteboard';
+
+  @override
+  String get scanCornerTopLeft => 'Top-left corner';
+
+  @override
+  String get scanCornerTopRight => 'Top-right corner';
+
+  @override
+  String get scanCornerBottomRight => 'Bottom-right corner';
+
+  @override
+  String get scanCornerBottomLeft => 'Bottom-left corner';
+
+  @override
+  String get scanCornerHint => 'Drag to adjust; use arrow keys when focused';
 }
