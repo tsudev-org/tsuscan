@@ -32,6 +32,11 @@ set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS_RELEASE}")
 # Use Unicode for all projects.
 add_definitions(-DUNICODE -D_UNICODE)
 
+# local_auth_windows 2.0.2 (bản mới nhất, 28/08/2026) còn biên dịch với /await + <experimental/coroutine>; MSVC 14.51
+# (VS 18) biến cảnh báo STL1011 thành lỗi. Macro dưới chỉ tắt cảnh báo ngừng hỗ trợ đó, không đổi mã sinh ra.
+# Gỡ khi plugin chuyển sang <coroutine> C++20 (theo dõi qua Dependabot pub).
+add_compile_definitions(_SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 # Compilation settings that should be applied to most targets.
 #
 # Be cautious about adding new options here, as plugins use this function by

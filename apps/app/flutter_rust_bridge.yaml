@@ -2,3 +2,5 @@
 rust_input: crate::api
 rust_root: ../../crates/tsuscan-ffi/
 dart_output: lib/src/bridge/generated
+# Khớp formatter.page_width trong analysis_options.yaml (mặc định FRB là 80 ⇒ CI lệch).
+dart_format_line_length: 120
