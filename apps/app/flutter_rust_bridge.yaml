@@ -1,0 +1,4 @@
+# Cấu hình codegen flutter_rust_bridge - chạy qua scripts/gen-bridge.sh (CI sinh lại và so git diff).
+rust_input: crate::api
+rust_root: ../../crates/tsuscan-ffi/
+dart_output: lib/src/bridge/generated

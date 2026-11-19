@@ -1,0 +1,44 @@
+name: tsuscan
+description: "Tsu Scan - quét tài liệu xử lý trên thiết bị, OCR tiếng Việt, đồng bộ E2EE."
+publish_to: 'none'
+
+# YY.M.DDNN+mã bản dựng (DESIGN_SYSTEM.md mục 6). Chưa phát hành: 0.x đến P12.
+version: 26.11.1901+26111901
+
+environment:
+  sdk: ^3.13.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  # Cầu Rust (crates/tsuscan-ffi) - phiên bản PHẢI khớp crate và codegen (scripts/gen-bridge.sh).
+  flutter_rust_bridge: 2.13.0
+  tsuscan_ffi:
+    path: rust_builder
+  intl: ^0.20.3
+  flutter_secure_storage: ^11.2.0
+  local_auth: ^3.0.2
+  shared_preferences: ^2.5.6
+  path_provider: ^2.1.6
+  file_selector: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  generate: true
+  uses-material-design: true
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700

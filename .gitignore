@@ -319,3 +319,6 @@ storybook-static/
 models/*
 !models/manifest.toml
 !models/README.md
+# cargokit (P5, ADR-0010): bin/build_tool.dart là MÃ NGUỒN công cụ build lõi Rust cho Flutter, không phải tệp nhị phân;
+# thiếu nó mọi bản build app gãy.
+!apps/app/rust_builder/cargokit/build_tool/bin/

@@ -1,0 +1,95 @@
+# Dựng app trên các đích cần máy chạy riêng: iOS + macOS (runner macOS, KHÔNG ký - chưa có tài khoản Apple Developer,
+# phát hành đầu 2027, AGENTS.md B.4) và Windows. Repo công khai nên phút macOS/Windows miễn phí.
+name: App (iOS, macOS, Windows)
+on:
+  pull_request:
+    paths:
+      - 'apps/app/**'
+      - 'crates/**'
+      - 'third_party/**'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - '.github/workflows/app-platforms.yml'
+  push:
+    branches: [main]
+  schedule:
+    - cron: '23 3 * * 1' # thứ Hai: bắt sớm lỗi do Xcode/runner đổi
+  workflow_dispatch:
+permissions: { contents: read }
+concurrency:
+  group: app-platforms-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  FLUTTER_VERSION: '3.47.8'
+  FLUTTER_COMMIT: '737ba8f885dc774b53b442759999a312c9461e4e'
+
+jobs:
+  apple:
+    name: iOS + macOS (không ký)
+    runs-on: macos-15
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - name: Flutter (ghim tag + commit)
+        run: |
+          set -euo pipefail
+          git clone --depth 1 -b "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          test "$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)" = "$FLUTTER_COMMIT"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Chọn Xcode mới nhất trên runner
+        run: |
+          set -euo pipefail
+          xc="$(ls -d /Applications/Xcode_*.app | sort -V | tail -1)"
+          sudo xcode-select -s "$xc/Contents/Developer"
+          xcodebuild -version
+      - name: Kiểm tĩnh plist
+        working-directory: apps/app
+        run: |
+          set -euo pipefail
+          plutil -lint ios/Runner/Info.plist macos/Runner/Release.entitlements macos/Runner/DebugProfile.entitlements
+          /usr/libexec/PlistBuddy -c 'Print :NSFaceIDUsageDescription' ios/Runner/Info.plist | grep -q .
+      - name: Build iOS (release, --no-codesign)
+        working-directory: apps/app
+        run: flutter build ios --release --no-codesign
+      - name: Build macOS (release) + chạy thử
+        working-directory: apps/app
+        run: |
+          set -euo pipefail
+          flutter build macos --release
+          app="$(ls -d build/macos/Build/Products/Release/*.app | head -1)"
+          bin="$app/Contents/MacOS/$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist")"
+          ( "$bin" > "$RUNNER_TEMP/run.log" 2>&1 & echo $! > "$RUNNER_TEMP/pid" )
+          sleep 25
+          kill "$(cat "$RUNNER_TEMP/pid")" 2>/dev/null || { echo "::error::App macOS đã thoát sớm"; cat "$RUNNER_TEMP/run.log"; exit 1; }
+          cat "$RUNNER_TEMP/run.log"
+          if grep -qiE "Unhandled Exception|Failed to load dynamic library|Failed to lookup symbol" "$RUNNER_TEMP/run.log"; then
+            echo "::error::App macOS lỗi khi khởi động"; exit 1
+          fi
+
+  windows:
+    name: Windows
+    runs-on: windows-2025
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - name: Flutter (ghim tag + commit)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 -b "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          test "$(git -C "$RUNNER_TEMP/flutter" rev-parse HEAD)" = "$FLUTTER_COMMIT"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+      - name: Build Windows (release)
+        working-directory: apps/app
+        run: flutter build windows --release
+      - name: Chạy thử (khởi động, không lỗi)
+        shell: pwsh
+        working-directory: apps/app
+        run: |
+          $exe = 'build/windows/x64/runner/Release/tsuscan.exe'
+          $p = Start-Process -FilePath $exe -PassThru
+          Start-Sleep -Seconds 25
+          if ($p.HasExited) { Write-Error "App Windows đã thoát sớm (mã $($p.ExitCode))"; exit 1 }
+          Stop-Process -Id $p.Id

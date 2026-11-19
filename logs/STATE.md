@@ -5,8 +5,7 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P5 - Khung app Flutter** (phiếu `logs/handover/20261119-05_p4-xong-bat-dau-p5.md`)
-- [ ] P6 - Quét bằng camera (Android)
+- [ ] **P6 - Quét bằng camera (Android)** (phiếu `logs/handover/20261119-06_p5-xong-bat-dau-p6.md`)
 - [ ] P7 - Công cụ sửa + tổ chức
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
 - [ ] P9 - Đồng bộ trong app
@@ -23,6 +22,14 @@
 | (trống) | | |
 
 ## Đã hoàn thành (mới nhất trên cùng)
+
+- 19/11/2026 - P5 Khung app Flutter (agent-scan, PR `feat/p5-app`): `apps/app` 6 đích + `crates/tsuscan-ffi` (crate
+  `tsuscan_ffi`, flutter_rust_bridge 2.13.0 + cargokit); thư viện (thư mục, nhãn, lọc, phân trang `DATA_TABLE.md`,
+  nhập ảnh bỏ EXIF), chi tiết tài liệu, tìm không dấu có tô sáng, khóa app PIN Argon2id + sinh trắc, khóa CSDL trong kho
+  bí mật HĐH, i18n vi/en, token Sáng/Tối/Hệ thống, mặc định theo hệ thống (T3); web = bản xem trước kho bộ nhớ (P11);
+  kho thêm `list_documents_page`/`count_documents`. ADR-0010, phiếu rà soát `docs/security-reviews/20261119-p5-app.md`.
+  CI: job `App Flutter (Linux, Web, Android)` (chạy thật bản Linux, kiểm `vault.db` đã mã hóa) + workflow
+  `app-platforms.yml` (iOS/macOS không ký, Windows). Test: Rust ffi 15, Dart 31.
 
 - 19/11/2026 - P4 Kho dữ liệu + mật mã (agent-scan, PR `feat/p4-vault`): `crates/tsuscan-vault` - SQLite3MC
   (ChaCha20-Poly1305) qua bản vá `third_party/libsqlite3-sys`, lược đồ v1 tài liệu/trang/thư mục/nhãn + bia mộ/HLC,
@@ -53,6 +60,9 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 19/11/2026 - App: FRB 2.13.0 + cargokit, ghim cùng bản 4 nơi + test chặn lệch; khóa CSDL trong kho bí mật HĐH; PIN
+  là khóa giao diện (Argon2id, chờ tăng dần); web chưa lưu dữ liệu tới P11: `docs/adr/0010-*`.
 
 - 19/11/2026 - Chủ dự án: iOS/macOS phát triển song song mọi phase (Mac/iPhone tải và cài được), phát hành đầu 2027
   khi có máy Mac (`AGENTS.md` B.4).
