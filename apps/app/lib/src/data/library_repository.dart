@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import '../bridge/generated/api/library.dart' as ffi;
 import '../bridge/generated/api/library.dart' show FolderDto, SearchHitDto, TagDto;
 import '../bridge/generated/api/text.dart';
+import 'scan_engine.dart';
 
 export '../bridge/generated/api/error.dart' show ApiError, ApiErrorKind;
 export '../bridge/generated/api/library.dart' show FolderDto, SearchHitDto, TagDto;
@@ -117,6 +118,9 @@ abstract interface class LibraryRepository {
 
   Future<List<PageInfo>> listPages(String documentId);
   Future<String> importImagePage(String documentId, Uint8List image);
+
+  /// Lưu trang vừa quét: nắn theo [quad] (`null` = cả khung), lọc, mã hóa JPEG một lần rồi ghi vào kho.
+  Future<String> addScannedPage(String documentId, ScanCapture capture, ScanQuad? quad, ScanFilter filter);
   Future<Uint8List> pageThumbnail(String pageId, int maxSide);
   Future<void> deletePage(String pageId);
 
@@ -201,6 +205,17 @@ final class RustLibraryRepository implements LibraryRepository {
   @override
   Future<String> importImagePage(String documentId, Uint8List image) =>
       _h.importImagePage(documentId: documentId, image: image);
+  @override
+  Future<String> addScannedPage(String documentId, ScanCapture capture, ScanQuad? quad, ScanFilter filter) {
+    if (capture is! RustScanCapture) throw ArgumentError('ảnh chụp không thuộc lõi Rust');
+    return _h.addScannedPage(
+      documentId: documentId,
+      image: capture.inner,
+      corners: quad?.corners ?? const [],
+      filter: filter.code,
+    );
+  }
+
   @override
   Future<Uint8List> pageThumbnail(String pageId, int maxSide) => _h.pageThumbnail(pageId: pageId, maxSide: maxSide);
   @override

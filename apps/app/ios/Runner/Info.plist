@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Quét tài liệu bằng camera, ảnh xử lý trên máy / Scan documents with the camera, processed on device</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Mở khóa Tsu Scan bằng Face ID / Unlock Tsu Scan with Face ID</string>
 	<key>ITSAppUsesNonExemptEncryption</key>

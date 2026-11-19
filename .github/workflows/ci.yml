@@ -248,3 +248,19 @@ jobs:
       - name: Kích thước APK
         working-directory: apps/app
         run: ls -l build/app/outputs/flutter-apk/*.apk
+      - name: Quyền Android tối thiểu (manifest release đã gộp)
+        working-directory: apps/app/android
+        run: |
+          set -euo pipefail
+          # Plugin hay tự khai thêm quyền (ghi âm, bộ nhớ ngoài, mạng): chặn mọi quyền ngoài danh sách đã rà soát.
+          ./gradlew -q :app:processReleaseMainManifest -x cargokitCargoBuildTsuscan_ffiRelease
+          m=$(find ../build/app/intermediates/merged_manifest/release -name AndroidManifest.xml | head -1)
+          got=$(grep -oE '<uses-permission[^>]*android:name="[^"]+"' "$m" | sed -E 's/.*name="([^"]+)"/\1/' | sort)
+          want=$(printf '%s\n' android.permission.CAMERA android.permission.USE_BIOMETRIC \
+            android.permission.USE_FINGERPRINT com.tsudev.tsuscan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION | sort)
+          echo "$got"
+          if [ "$got" != "$want" ]; then
+            echo "::error::Quyền Android lệch danh sách đã rà soát (docs/security-reviews/20261119-p6-camera.md)"
+            diff <(echo "$want") <(echo "$got") || true
+            exit 1
+          fi

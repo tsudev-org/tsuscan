@@ -8,6 +8,8 @@ import 'error.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+import 'scan.dart';
+
 // These functions are ignored because they are not marked as `pub`: `clean_name`, `doc_dto`, `encode_jpeg`, `key_from`, `lock`, `wrap`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
@@ -22,6 +24,18 @@ bool libraryExists({required String root}) => RustLib.instance.api.crateApiLibra
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<LibraryHandle>>
 abstract class LibraryHandle implements RustOpaqueInterface {
+  /// Lưu trang vừa quét làm trang cuối: nắn theo `corners` (8 số chuẩn hóa, rỗng = cả khung), áp bộ lọc `filter`,
+  /// cạnh dài ≤ [`MAX_SCAN_SIDE`], mã hóa JPEG một lần rồi ghi mã hóa vào kho. Trả id trang.
+  ///
+  /// # Errors
+  /// `InvalidInput` (góc/bộ lọc sai), `UnsupportedImage`, `NotFound`, `Storage`.
+  Future<String> addScannedPage({
+    required String documentId,
+    required CapturedImage image,
+    required List<double> corners,
+    required String filter,
+  });
+
   /// Tạo kho mới (lần chạy đầu). Không bao giờ ghi đè kho có sẵn.
   ///
   /// # Errors
