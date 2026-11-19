@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dữ liệu D3 (giấy tờ tùy thân): không sao lưu đám mây, không chuyển máy qua thiết bị. Khóa CSDL nằm trong Keystore
+     và không thể chuyển đi, nên bản sao kho trên máy mới cũng vô dụng. Đồng bộ chính thức: E2EE (P9). -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+        <exclude domain="file" />
+        <exclude domain="database" />
+        <exclude domain="sharedpref" />
+        <exclude domain="external" />
+    </device-transfer>
+</data-extraction-rules>

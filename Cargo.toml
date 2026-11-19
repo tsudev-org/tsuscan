@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/tsuscan-imaging", "crates/tsuscan-ml", "crates/tsuscan-doc", "crates/tsuscan-vault", "crates/tsuscan-cli"]
+members = ["crates/tsuscan-imaging", "crates/tsuscan-ml", "crates/tsuscan-doc", "crates/tsuscan-vault", "crates/tsuscan-cli", "crates/tsuscan-ffi"]
 exclude = ["fuzz", "third_party"]
 
 [workspace.package]

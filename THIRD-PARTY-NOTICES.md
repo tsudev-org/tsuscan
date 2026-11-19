@@ -30,6 +30,8 @@ trong CI (danh sách cho phép: `deny.toml`). Cập nhật file này trong cùng
 | [getrandom](https://github.com/rust-random/getrandom) | 0.4.3 | MIT OR Apache-2.0 | `tsuscan-doc` | Khóa tệp/muối/IV ngẫu nhiên từ hệ điều hành |
 | [rxing](https://github.com/rxing-core/rxing) | 0.9.4 | Apache-2.0 | `tsuscan-doc` | Đọc QR/mã vạch (cổng ZXing; chỉ bộ giải mã trong app, bộ mã hóa chỉ dùng sinh mẫu test) |
 | [libfuzzer-sys](https://github.com/rust-fuzz/libfuzzer) | 0.4 | MIT OR Apache-2.0 | `fuzz/` (ngoài workspace) | Đích fuzz |
+| [flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge) | 2.13.0 (ghim `=`) | MIT | `tsuscan_ffi` | Cầu Rust ↔ Dart (mã sinh `frb_generated.rs`) |
+| [argon2](https://github.com/RustCrypto/password-hashes) + [subtle](https://github.com/dalek-cryptography/subtle) | 0.6.0 / 2.6.1 | MIT OR Apache-2.0 / BSD-3-Clause | `tsuscan_ffi` | Bộ kiểm PIN khóa app, so sánh thời gian hằng |
 
 ## Mô hình AI (`models/manifest.toml`, không nằm trong git)
 
@@ -40,11 +42,23 @@ trong CI (danh sách cho phép: `deny.toml`). Cập nhật file này trong cùng
 | PP-LCNet x1.0 doc_ori | Apache-2.0 | PaddlePaddle - huggingface.co/PaddlePaddle/PP-LCNet_x1_0_doc_ori_onnx | Hướng trang |
 | UVDoc | Apache-2.0 | PaddlePaddle (mô hình UVDoc của Verhoeven và cộng sự) - huggingface.co/PaddlePaddle/UVDoc_onnx | Làm phẳng trang cong |
 
+## Dart/Flutter (`apps/app/pubspec.yaml`)
+
+| Gói | Phiên bản | Giấy phép | Mục đích |
+| --- | --- | --- | --- |
+| Flutter SDK, `flutter_localizations`, `intl` | 3.47.8 / 0.20 | BSD-3-Clause | Khung giao diện, i18n vi/en |
+| [flutter_rust_bridge](https://pub.dev/packages/flutter_rust_bridge) | 2.13.0 | MIT | Phía Dart của cầu nối |
+| [flutter_secure_storage](https://pub.dev/packages/flutter_secure_storage) | 11.2 | BSD-3-Clause | Khóa CSDL + bộ kiểm PIN trong Keystore/Keychain/DPAPI/libsecret |
+| [local_auth](https://pub.dev/packages/local_auth), [shared_preferences](https://pub.dev/packages/shared_preferences), [path_provider](https://pub.dev/packages/path_provider), [file_selector](https://pub.dev/packages/file_selector) | 3.0 / 2.5 / 2.1 / 1.1 | BSD-3-Clause | Sinh trắc học, cài đặt, thư mục dữ liệu app, chọn ảnh |
+
+Font **Inter** (Rasmus Andersson) - SIL OFL 1.1, đóng gói trong app: `apps/app/assets/fonts/Inter-LICENSE.txt`.
+
 ## Mã nguồn chép vào repo
 
 | Thành phần | Giấy phép | Nguồn | Ghi chú |
 | --- | --- | --- | --- |
 | `third_party/libsqlite3-sys` (0.40.0) | MIT | rusqlite - github.com/rusqlite/rusqlite | Vá để biên dịch SQLite3MC (`TSUSCAN.md` trong thư mục) |
+| `apps/app/rust_builder/cargokit` | MIT OR Apache-2.0 | Cargokit (Matej Knopp) qua `flutter_rust_bridge_codegen integrate` | Build lõi Rust trong mọi bản build Flutter |
 | SQLite3MultipleCiphers 2.6.1 (qua crate `sqlite3mc-src`) | MIT (lớp mã hóa), SQLite: public domain | Ulrich Telle - github.com/utelle/SQLite3MultipleCiphers | Kho mã hóa trên máy |
 
 ## Font trong `testdata/fonts/` (chỉ dùng sinh bộ mẫu test, không đóng gói vào app)

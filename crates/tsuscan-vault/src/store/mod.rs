@@ -515,20 +515,46 @@ impl Vault {
     /// # Errors
     /// Lỗi SQLite.
     pub fn list_documents(&self, filter: DocumentFilter<'_>) -> Result<Vec<DocumentInfo>> {
-        let (folder_any, folder) = match filter.folder {
-            None => (1, None),
-            Some(f) => (0, f),
-        };
+        self.list_documents_page(filter, u32::MAX, 0)
+    }
+
+    /// Một trang của [`Self::list_documents`]: bỏ `offset` bản ghi đầu, lấy tối đa `limit` (phân trang tại CSDL,
+    /// `DATA_TABLE.md` mục 4).
+    ///
+    /// # Errors
+    /// Lỗi SQLite.
+    pub fn list_documents_page(
+        &self,
+        filter: DocumentFilter<'_>,
+        limit: u32,
+        offset: u64,
+    ) -> Result<Vec<DocumentInfo>> {
+        let (folder_any, folder) = folder_params(filter);
         let sql = format!(
-            "{DOC_SELECT} WHERE d.deleted = 0
-               AND (?1 = 1 OR d.folder_id IS ?2)
-               AND (?3 IS NULL OR EXISTS (SELECT 1 FROM document_tags t
-                    WHERE t.document_id = d.id AND t.tag_id = ?3 AND t.deleted = 0))
-             ORDER BY d.updated_ms DESC, d.id"
+            "{DOC_SELECT} WHERE d.deleted = 0 AND {DOC_FILTER}
+             ORDER BY d.updated_ms DESC, d.id LIMIT ?4 OFFSET ?5"
         );
         let mut st = self.conn.prepare(&sql)?;
-        let rows = st.query_map(params![folder_any, folder, filter.tag], doc_row)?;
+        let offset = i64::try_from(offset).unwrap_or(i64::MAX);
+        let rows = st.query_map(
+            params![folder_any, folder, filter.tag, i64::from(limit), offset],
+            doc_row,
+        )?;
         Ok(rows.collect::<std::result::Result<_, _>>()?)
+    }
+
+    /// Số tài liệu khớp bộ lọc (dòng tóm tắt của vùng bản ghi).
+    ///
+    /// # Errors
+    /// Lỗi SQLite.
+    pub fn count_documents(&self, filter: DocumentFilter<'_>) -> Result<u64> {
+        let (folder_any, folder) = folder_params(filter);
+        let n: i64 = self.conn.query_row(
+            &format!("SELECT COUNT(*) FROM documents d WHERE d.deleted = 0 AND {DOC_FILTER}"),
+            params![folder_any, folder, filter.tag],
+            |r| r.get(0),
+        )?;
+        Ok(u64::try_from(n).unwrap_or(0))
     }
 
     // ---------------------------------------------------------------- trang
@@ -769,6 +795,18 @@ impl Vault {
             .join(FILES_DIR)
             .join(shard)
             .join(format!("{file_id}.tsf"))
+    }
+}
+
+/// Điều kiện lọc dùng chung cho danh sách + đếm: ?1 = mọi thư mục, ?2 = thư mục, ?3 = nhãn.
+const DOC_FILTER: &str = "(?1 = 1 OR d.folder_id IS ?2)
+    AND (?3 IS NULL OR EXISTS (SELECT 1 FROM document_tags t
+         WHERE t.document_id = d.id AND t.tag_id = ?3 AND t.deleted = 0))";
+
+fn folder_params(filter: DocumentFilter<'_>) -> (i64, Option<&str>) {
+    match filter.folder {
+        None => (1, None),
+        Some(f) => (0, f),
     }
 }
 

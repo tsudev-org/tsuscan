@@ -1,0 +1,42 @@
+[package]
+name = "tsuscan_ffi"
+description = "Cầu Rust ↔ Flutter của Tsu Scan (flutter_rust_bridge): kho, ảnh trang, khóa app, tìm kiếm"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+# cdylib: Android/Linux/Windows nạp động; staticlib: iOS/macOS liên kết tĩnh (cargokit chọn theo đích).
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[dependencies]
+# Phiên bản PHẢI khớp `flutter_rust_bridge` trong apps/app/pubspec.yaml và codegen (`scripts/gen-bridge.sh`).
+flutter_rust_bridge = "=2.13.0"
+tsuscan-imaging.workspace = true
+tsuscan-vault.workspace = true
+image.workspace = true
+argon2 = "0.6.0"
+subtle = "2.6.1"
+zeroize = "1.9.2"
+getrandom = "0.4.3"
+
+# KHÔNG kế thừa `unsafe_code = "forbid"` của workspace: mã do flutter_rust_bridge sinh (`frb_generated.rs`) dùng
+# `unsafe` để trao con trỏ qua FFI (docs/ARCHITECTURE.md mục 5 - ngoại lệ duy nhất cùng backend phần cứng).
+# Mã viết tay trong `src/api` vẫn bị cấm `unsafe` bằng `#![deny(unsafe_code)]` ở `api/mod.rs`.
+[lints.rust]
+missing_docs = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+cast_possible_truncation = "allow"
+cast_sign_loss = "allow"
+doc_markdown = "allow"
+# API cầu nối nhận giá trị sở hữu (String, Vec<u8>) theo yêu cầu của flutter_rust_bridge.
+needless_pass_by_value = "allow"

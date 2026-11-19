@@ -4,6 +4,16 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 
 ## [Chưa phát hành]
 
+### P5 (19/11/2026) - Khung app Flutter
+
+- App Flutter 6 đích (Android, iOS, macOS, Windows, Linux, web xem trước) trên lõi Rust qua `flutter_rust_bridge`
+  2.13.0 + cargokit (`crates/tsuscan-ffi`, ADR-0010).
+- Thư viện tài liệu: thư mục, nhãn, lọc, phân trang theo `DATA_TABLE.md`, nhập ảnh (bỏ EXIF/GPS), xem/xóa trang.
+- Tìm không dấu trên tên + chữ OCR, tô sáng đúng chữ có dấu.
+- Khóa app bằng PIN (Argon2id, chờ tăng dần) + sinh trắc học; khóa CSDL trong kho bí mật của hệ điều hành.
+- i18n vi/en, giao diện Sáng/Tối/Hệ thống theo token TsuDEV, mặc định theo hệ thống (PRODUCT_POLICY mục 1).
+- Kho: `list_documents_page` + `count_documents` (phân trang tại CSDL, không đổi định dạng).
+
 ### Số đo P4 (19/11/2026, kho + mật mã `tsuscan-vault`)
 
 | Chỉ tiêu | Đo được |

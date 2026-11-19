@@ -313,3 +313,32 @@ fn rekey_and_reopen() {
     assert_eq!(v.page_image(&p.id).unwrap().as_slice(), b"anh ho chieu");
     assert!(t.0.join(DB_FILE).is_file());
 }
+
+#[test]
+fn phan_trang_va_dem_tai_lieu_theo_bo_loc() {
+    let dir = TempDir::new("page");
+    let mut v = Vault::create(&dir.0, &key(7)).unwrap();
+    let folder = v.create_folder("Hồ sơ", None).unwrap();
+    let mut ids = Vec::new();
+    for i in 0..25 {
+        let f = (i % 5 == 0).then_some(folder.as_str());
+        ids.push(v.create_document(&format!("Tài liệu {i:02}"), f).unwrap());
+    }
+    let all = v.list_documents(DocumentFilter::default()).unwrap();
+    assert_eq!(v.count_documents(DocumentFilter::default()).unwrap(), 25);
+    let page2 = v.list_documents_page(DocumentFilter::default(), 10, 10).unwrap();
+    assert_eq!(page2, all[10..20]);
+    let last = v.list_documents_page(DocumentFilter::default(), 10, 20).unwrap();
+    assert_eq!(last.len(), 5);
+    assert!(
+        v.list_documents_page(DocumentFilter::default(), 10, 100)
+            .unwrap()
+            .is_empty()
+    );
+    let in_folder = DocumentFilter {
+        folder: Some(Some(&folder)),
+        ..Default::default()
+    };
+    assert_eq!(v.count_documents(in_folder).unwrap(), 5);
+    assert_eq!(v.list_documents_page(in_folder, 3, 3).unwrap().len(), 2);
+}

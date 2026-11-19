@@ -1,0 +1,251 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Tsu Scan",
+  "navLibrary": "Tài liệu",
+  "navScan": "Quét",
+  "navSearch": "Tìm kiếm",
+  "navSettings": "Cài đặt",
+  "actionCancel": "Hủy",
+  "actionSave": "Lưu",
+  "actionCreate": "Tạo",
+  "actionDelete": "Xóa",
+  "actionRename": "Đổi tên",
+  "actionMove": "Chuyển thư mục",
+  "actionRetry": "Thử lại",
+  "actionClose": "Đóng",
+  "libraryAllDocuments": "Tất cả tài liệu",
+  "libraryRootFolder": "Chưa xếp thư mục",
+  "libraryFolders": "Thư mục",
+  "libraryTags": "Nhãn",
+  "libraryNewDocument": "Tài liệu mới",
+  "libraryNewFolder": "Thư mục mới",
+  "libraryNewTag": "Nhãn mới",
+  "libraryImportImages": "Nhập ảnh",
+  "libraryEmptyTitle": "Chưa có tài liệu nào",
+  "libraryEmptyBody": "Tạo tài liệu mới hoặc nhập ảnh có sẵn. Mọi dữ liệu được mã hóa và chỉ nằm trên máy này.",
+  "libraryNoMatch": "Không có tài liệu nào khớp bộ lọc",
+  "libraryClearFilter": "Bỏ lọc",
+  "libraryPages": "{count, plural, =0{Chưa có trang} other{{count} trang}}",
+  "@libraryPages": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "libraryUpdated": "Sửa lúc {time}",
+  "@libraryUpdated": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogDocumentTitle": "Tên tài liệu",
+  "dialogFolderName": "Tên thư mục",
+  "dialogTagName": "Tên nhãn",
+  "dialogDefaultDocumentTitle": "Tài liệu {date}",
+  "@dialogDefaultDocumentTitle": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogNameRequired": "Nhập tên (tối đa 200 ký tự)",
+  "confirmDeleteDocumentTitle": "Xóa tài liệu?",
+  "confirmDeleteDocumentBody": "\"{title}\" và mọi trang của nó sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.",
+  "@confirmDeleteDocumentBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeleteFolderTitle": "Xóa thư mục?",
+  "confirmDeleteFolderBody": "Tài liệu trong \"{name}\" được giữ lại và chuyển lên thư mục cha.",
+  "@confirmDeleteFolderBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeleteTagTitle": "Xóa nhãn?",
+  "confirmDeleteTagBody": "Nhãn \"{name}\" sẽ được gỡ khỏi mọi tài liệu.",
+  "@confirmDeleteTagBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "confirmDeletePageTitle": "Xóa trang?",
+  "confirmDeletePageBody": "Trang này sẽ bị xóa hẳn khỏi máy. Không thể hoàn tác.",
+  "documentNoPages": "Tài liệu chưa có trang. Thêm ảnh để bắt đầu.",
+  "documentAddPages": "Thêm trang từ ảnh",
+  "documentPageLabel": "Trang {number}",
+  "@documentPageLabel": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "documentTagsTitle": "Gắn nhãn",
+  "documentMoveRoot": "Thư mục gốc",
+  "documentImported": "{count, plural, other{Đã thêm {count} trang}}",
+  "@documentImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "documentImportSkipped": "{count, plural, other{{count} ảnh không đọc được đã bị bỏ qua}}",
+  "@documentImportSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "documentOcrPending": "Chưa có chữ nhận dạng (OCR có ở bản sau).",
+  "pagerPerPage": "/ trang",
+  "pagerSummary": "{from}-{to} / {total}",
+  "@pagerSummary": {
+    "placeholders": {
+      "from": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "to": {
+        "type": "int",
+        "format": "decimalPattern"
+      },
+      "total": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "pagerEmpty": "0 / 0",
+  "pagerPrevious": "Trước",
+  "pagerNext": "Sau",
+  "pagerPageSizeLabel": "Số bản ghi mỗi trang",
+  "scanTitle": "Quét tài liệu",
+  "scanComingBody": "Quét bằng camera có tự dò mép, tự chụp và chụp loạt sẽ có ở bản cập nhật kế tiếp. Lúc này bạn có thể nhập ảnh đã chụp: ảnh được mã hóa ngay trên máy, siêu dữ liệu (vị trí GPS, máy chụp) bị loại bỏ.",
+  "scanImportToNew": "Nhập ảnh thành tài liệu mới",
+  "searchHint": "Tìm theo tên hoặc chữ trong trang (gõ không dấu được)",
+  "searchMinChars": "Nhập ít nhất 2 ký tự",
+  "searchNoResults": "Không tìm thấy kết quả cho \"{query}\"",
+  "@searchNoResults": {
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchAccentLess": "Khớp không dấu",
+  "settingsAppearance": "Giao diện",
+  "settingsThemeLight": "Sáng",
+  "settingsThemeDark": "Tối",
+  "settingsThemeSystem": "Hệ thống",
+  "settingsLanguage": "Ngôn ngữ",
+  "settingsLanguageSystem": "Theo hệ thống",
+  "settingsSecurity": "Bảo mật",
+  "settingsAppLock": "Khóa ứng dụng bằng mã PIN",
+  "settingsAppLockBody": "Hỏi mã PIN khi mở app hoặc quay lại sau 1 phút",
+  "settingsBiometric": "Mở khóa bằng sinh trắc học",
+  "settingsBiometricUnavailable": "Thiết bị này không hỗ trợ hoặc chưa cài sinh trắc học",
+  "settingsChangePin": "Đổi mã PIN",
+  "settingsStorageNote": "Dữ liệu được mã hóa bằng khóa lưu trong kho bí mật của hệ điều hành và không rời khỏi máy.",
+  "settingsAbout": "Giới thiệu",
+  "settingsVersion": "Phiên bản {app} · lõi {core}",
+  "@settingsVersion": {
+    "placeholders": {
+      "app": {
+        "type": "String"
+      },
+      "core": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsLicense": "Mã nguồn mở AGPL-3.0",
+  "settingsLicenses": "Giấy phép bên thứ ba",
+  "pinSetTitle": "Đặt mã PIN",
+  "pinConfirmTitle": "Nhập lại mã PIN",
+  "pinHint": "4-12 chữ số",
+  "pinMismatch": "Hai lần nhập không khớp",
+  "pinInvalid": "Mã PIN gồm 4-12 chữ số",
+  "lockTitle": "Tsu Scan đang khóa",
+  "lockEnterPin": "Nhập mã PIN",
+  "lockUnlock": "Mở khóa",
+  "lockUseBiometric": "Dùng sinh trắc học",
+  "lockBiometricReason": "Mở khóa Tsu Scan",
+  "lockWrongPin": "Sai mã PIN ({count} lần)",
+  "@lockWrongPin": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lockWait": "Thử lại sau {seconds} giây",
+  "@lockWait": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "startupOpening": "Đang mở kho tài liệu…",
+  "startupWebNotice": "Bản web đang thử nghiệm: dữ liệu chỉ nằm trong bộ nhớ và mất khi đóng tab. Bản web đầy đủ (mã hóa, lưu bền) sẽ có sau.",
+  "startupErrorTitle": "Không mở được kho tài liệu",
+  "startupKeyMissing": "Khóa giải mã trong kho bí mật của máy không còn (có thể do khôi phục máy hoặc gỡ cài đặt dở). Dữ liệu cũ không thể đọc lại nếu thiếu khóa.",
+  "startupResetLibrary": "Tạo kho mới (xóa dữ liệu cũ)",
+  "startupResetConfirm": "Toàn bộ tài liệu cũ trên máy này sẽ bị xóa hẳn. Tiếp tục?",
+  "errorWrongKey": "Khóa giải mã không khớp với kho trên máy.",
+  "errorNotFound": "Mục này không còn tồn tại.",
+  "errorInvalidInput": "Dữ liệu nhập không hợp lệ.",
+  "errorUnsupportedImage": "Ảnh không đọc được hoặc định dạng chưa hỗ trợ (JPEG, PNG, WebP).",
+  "errorImageTooLarge": "Ảnh quá lớn (tối đa 100 megapixel).",
+  "errorStorage": "Lỗi lưu trữ trên máy (đầy bộ nhớ hoặc thiếu quyền).",
+  "errorUnknown": "Đã xảy ra lỗi không mong muốn.",
+  "pagerItems": "{count, plural, other{{count} mục}}",
+  "pagerAnnounce": "Đang hiển thị {from} đến {to} trong {total} mục",
+  "pagerFiltered": "{range} (lọc từ {all})",
+  "@pagerItems": {
+    "placeholders": {
+      "count": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  },
+  "@pagerAnnounce": {
+    "placeholders": {
+      "from": {
+        "type": "int"
+      },
+      "to": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@pagerFiltered": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      },
+      "all": {
+        "type": "int",
+        "format": "decimalPattern"
+      }
+    }
+  }
+}

@@ -13,7 +13,7 @@
 │ tsuscan-doc      PDF/PDF-A/DOCX/XLSX, nhập PDF/ảnh, che, ký, QR                        │  │ D1: siêu dữ liệu mã   │
 │ tsuscan-vault    SQLite mã hóa, FTS5, tệp mã hóa luồng, khóa, HLC, phong bì E2EE      │  │ R2: khối tệp đã mã hóa│
 │ tsuscan-scanner  eSCL · SANE · WIA · TWAIN · ICA (chỉ desktop + eSCL Android)          │  └───────────────────────┘
-│ tsuscan-ffi      API ổn định cho Flutter; tsuscan-cli  công cụ dòng lệnh               │
+│ tsuscan_ffi      API ổn định cho Flutter; tsuscan-cli  công cụ dòng lệnh               │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 apps/site (Astro, Cloudflare Pages): giới thiệu, tải về, hướng dẫn, riêng tư.
 ```
@@ -23,7 +23,7 @@ apps/site (Astro, Cloudflare Pages): giới thiệu, tải về, hướng dẫn,
 | Đường dẫn | Nội dung |
 | --- | --- |
 | `crates/*` | Workspace Rust (`Cargo.toml` gốc), MSRV ghim trong `rust-toolchain.toml` |
-| `apps/app` | Flutter, `lib/l10n/*.arb`, `lib/src/{features,ui,bridge}` |
+| `apps/app` | Flutter, `lib/l10n/*.arb`, `lib/src/{features,ui,data,services,bootstrap,bridge}`; `rust_builder/` (cargokit) build `crates/tsuscan-ffi` (crate `tsuscan_ffi`, ADR-0010) |
 | `apps/site` | Astro |
 | `services/sync-api` | TypeScript, Hono, migration D1 |
 | `models/` | Chỉ **manifest** mô hình (URL, sha256, chữ ký, giấy phép); tệp mô hình tải lúc build/chạy |
