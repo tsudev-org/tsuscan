@@ -74,7 +74,7 @@ cd apps/app && flutter test && flutter run -d linux
 | --- | --- | --- |
 | Tên repo `tsuscan` thay vì `tsudev-scan` (`ECOSYSTEM_IDENTITY.md` mục 3) | Theo cách đặt tên mới của hệ (tsufiles, tsucontact, tsuswico), chủ dự án chốt 18/11/2026 | Đề xuất cập nhật quy ước ở tsudev-standards |
 | Logo: dùng logo tsudev chung | Chưa có logo riêng được duyệt (`BRAND_ASSETS.md` mục 15) | Có logo duyệt ⇒ thay `assets/brand/source/` |
-| iOS chưa phát hành | Apple Developer tốn phí, chủ dự án hoãn | Mã iOS build trên CI; iPhone dùng PWA |
+| iOS phát triển song song, chưa phát hành | Chủ dự án xác nhận 19/11/2026 (khớp `PRODUCT_POLICY.md` v3.8.1): mọi phase làm đích iOS/macOS cùng Android/Windows để Mac/iPhone tải và cài được; chưa có máy Mac + tài khoản Apple Developer | Mã iOS/macOS build + test trên CI (runner macOS); đầu 2027 có máy Mac thì ký và phát hành; trước đó iPhone dùng thêm PWA |
 | Giấy phép AGPL-3.0 | Dữ liệu D3 + máy chủ, bản phái sinh phải công khai mã | ADR-0004 |
 
 ### B.5. Việc riêng của repo cần biết trước khi sửa

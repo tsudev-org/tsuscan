@@ -1,0 +1,3 @@
+# Dương tính giả còn trong lịch sử git, chủ dự án duyệt 19/11/2026. Mỗi fingerprint kèm lý do ở dòng chú thích trên nó.
+# Chuỗi số CCCD GIẢ trong test kho (biến `secret_text`, đã đổi tên thành `cccd_text` ở commit da5dddf).
+c301e38b487280c4c4b2a894f21249a24eb891a4:crates/tsuscan-vault/tests/store.rs:generic-api-key:79

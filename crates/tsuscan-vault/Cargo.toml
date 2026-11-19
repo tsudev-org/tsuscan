@@ -1,0 +1,28 @@
+[package]
+name = "tsuscan-vault"
+description = "Kho Tsu Scan: SQLite mã hóa (SQLite3MC), FTS5 không dấu, tệp trang mã hóa luồng, phân cấp khóa, HLC"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+rusqlite = { version = "0.43.0", features = ["bundled"] }
+chacha20poly1305 = "0.11.0"
+argon2 = "0.6.0"
+hkdf = "0.13.0"
+sha2 = "0.11.1"
+bip39 = "3.0.0"
+zeroize = { version = "1.9.2", features = ["zeroize_derive"] }
+getrandom = "0.4.3"
+unicode-normalization = "0.1.26"
+
+[lints]
+workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+unicode-normalization = "0.1.26"
