@@ -22,8 +22,8 @@ pub use search::SearchHit;
 
 use crate::error::{Result, VaultError};
 use crate::hlc::{Clock, Hlc, wall_now_ms};
+use crate::key::{Key32, fill_random};
 use crate::keys::{self, context};
-use crate::secret::{Key32, fill_random};
 use crate::stream;
 
 /// Tên tệp CSDL trong thư mục gốc của kho.

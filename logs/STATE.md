@@ -54,6 +54,8 @@
 
 ## Quyết định quan trọng
 
+- 19/11/2026 - Chủ dự án: iOS/macOS phát triển song song mọi phase (Mac/iPhone tải và cài được), phát hành đầu 2027
+  khi có máy Mac (`AGENTS.md` B.4).
 - 19/11/2026 - Kho: SQLite3MC qua bản vá libsqlite3-sys (loại SQLCipher +4 MB/ABI, loại mã hóa tầng ứng dụng vì chỉ
   mục FTS lộ chữ OCR); phong bì/luồng v1, Argon2id 3/64 MiB sàn 2/19 MiB, KEK khôi phục HKDF: `docs/adr/0009-*`.
 

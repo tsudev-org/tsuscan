@@ -76,7 +76,7 @@ fn create_open_wrong_key_and_no_overwrite() {
 #[test]
 fn pages_roundtrip_encrypted_on_disk() {
     let t = TempDir::new("pages");
-    let secret_text = "SO-CCCD-079123456789";
+    let cccd_text = "SO-CCCD-079123456789";
     let image: Vec<u8> = b"JPEGDATA-chu-ky-mat"
         .iter()
         .copied()
@@ -90,7 +90,7 @@ fn pages_roundtrip_encrypted_on_disk() {
             &doc,
             NewPage {
                 ocr_blob: Some(b"{\"lines\":[]}"),
-                ..page(&image, secret_text)
+                ..page(&image, cccd_text)
             },
         )
         .unwrap();
@@ -120,7 +120,7 @@ fn pages_roundtrip_encrypted_on_disk() {
     for f in &all {
         let raw = std::fs::read(f).unwrap();
         for needle in [
-            secret_text.as_bytes(),
+            cccd_text.as_bytes(),
             b"JPEGDATA",
             "Căn cước".as_bytes(),
             b"can cuoc",

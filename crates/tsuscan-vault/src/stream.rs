@@ -13,7 +13,7 @@ use zeroize::Zeroizing;
 
 use crate::envelope::{MAGIC, TAG_LEN, cipher};
 use crate::error::{Result, VaultError};
-use crate::secret::{Key32, fill_random};
+use crate::key::{Key32, fill_random};
 
 /// Phiên bản định dạng luồng.
 pub const VERSION: u8 = 1;

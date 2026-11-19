@@ -8,7 +8,7 @@ use chacha20poly1305::aead::{Aead, KeyInit, Payload};
 use zeroize::Zeroizing;
 
 use crate::error::{Result, VaultError};
-use crate::secret::{Key32, fill_random};
+use crate::key::{Key32, fill_random};
 
 /// Byte nhận dạng định dạng.
 pub const MAGIC: [u8; 2] = *b"TS";

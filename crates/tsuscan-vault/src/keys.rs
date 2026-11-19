@@ -15,7 +15,7 @@ use zeroize::Zeroizing;
 
 use crate::envelope::{self, Kind};
 use crate::error::{Result, VaultError};
-use crate::secret::{Key32, fill_random};
+use crate::key::{Key32, fill_random};
 
 /// Số ký tự tối thiểu của mật khẩu mã hóa sau chuẩn hóa NFKC.
 pub const MIN_PASSWORD_CHARS: usize = 10;
