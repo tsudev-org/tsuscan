@@ -23,7 +23,7 @@
 
 ## Đã hoàn thành (mới nhất trên cùng)
 
-- 19/11/2026 - P5 Khung app Flutter (agent-scan, PR `feat/p5-app`): `apps/app` 6 đích + `crates/tsuscan-ffi` (crate
+- 19/11/2026 - P5 Khung app Flutter (agent-scan, PR #8 `feat/p5-app`): `apps/app` 6 đích + `crates/tsuscan-ffi` (crate
   `tsuscan_ffi`, flutter_rust_bridge 2.13.0 + cargokit); thư viện (thư mục, nhãn, lọc, phân trang `DATA_TABLE.md`,
   nhập ảnh bỏ EXIF), chi tiết tài liệu, tìm không dấu có tô sáng, khóa app PIN Argon2id + sinh trắc, khóa CSDL trong kho
   bí mật HĐH, i18n vi/en, token Sáng/Tối/Hệ thống, mặc định theo hệ thống (T3); web = bản xem trước kho bộ nhớ (P11);
