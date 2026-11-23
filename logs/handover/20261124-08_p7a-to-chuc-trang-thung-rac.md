@@ -25,7 +25,10 @@
 
 - [ ] Gộp PR #9 (P6) khi CI xanh, rebase P7a lên main, mở PR P7a, chờ CI, gộp.
 - [ ] Chạy thật P7a trên Galaxy M32 (adb Windows `/mnt/c/Users/devng/AppData/Local/Android/Sdk/platform-tools/adb.exe`;
-  Flutter trong WSL không thấy máy ⇒ `flutter build apk --profile --target-platform android-arm64` rồi `adb.exe install -r`).
+  Flutter trong WSL không thấy máy ⇒ `flutter build apk --profile --target-platform android-arm64` (~12 phút) rồi `adb.exe install -r`).
+  24/11: APK profile P7a đã build sẵn ở `C:\Users\devng\AppData\Local\Temp\tsuscan\app-profile.apk`, nhưng điện thoại ngắt
+  adb giữa phiên (👤 cắm lại). Cài đè `-r` để kiểm luôn nâng lược đồ v1 → v2 trên dữ liệu thật; kiểm: Xóa ⇒ thùng rác +
+  Hoàn tác, khôi phục, xoay (ảnh thu nhỏ tải lại), chuyển/tách/ghép, kính lúp khi kéo góc.
 - [ ] P7b, P7c theo `docs/PLAN.md`. Phiếu GP1 (Play Console) sau khi P6 gộp; PRO1/PRO2 sau P8.
 
 ## 5. Cảnh báo
