@@ -352,5 +352,122 @@
   "scanCornerTopRight": "Góc trên bên phải",
   "scanCornerBottomRight": "Góc dưới bên phải",
   "scanCornerBottomLeft": "Góc dưới bên trái",
-  "scanCornerHint": "Kéo để chỉnh; dùng phím mũi tên khi đang chọn"
+  "scanCornerHint": "Kéo để chỉnh; dùng phím mũi tên khi đang chọn",
+  "confirmTrashDocumentTitle": "Chuyển vào thùng rác?",
+  "confirmTrashDocumentBody": "\"{title}\" sẽ nằm trong thùng rác {days} ngày rồi bị xóa hẳn. Có thể khôi phục trước đó.",
+  "@confirmTrashDocumentBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "actionMoveToTrash": "Chuyển vào thùng rác",
+  "actionUndo": "Hoàn tác",
+  "actionRestore": "Khôi phục",
+  "actionDeleteForever": "Xóa vĩnh viễn",
+  "trashMoved": "Đã chuyển \"{title}\" vào thùng rác",
+  "@trashMoved": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashRestored": "Đã khôi phục \"{title}\"",
+  "@trashRestored": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "trashTitle": "Thùng rác",
+  "trashEmpty": "Thùng rác trống",
+  "trashHint": "Tài liệu trong thùng rác tự xóa hẳn sau {days} ngày.",
+  "@trashHint": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashPurgeOn": "Xóa hẳn ngày {date}",
+  "@trashPurgeOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "trashEmptyAll": "Dọn sạch thùng rác",
+  "confirmEmptyTrashTitle": "Dọn sạch thùng rác?",
+  "confirmEmptyTrashBody": "{count} tài liệu sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.",
+  "@confirmEmptyTrashBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmPurgeTitle": "Xóa vĩnh viễn?",
+  "confirmPurgeBody": "\"{title}\" và mọi trang của nó sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.",
+  "@confirmPurgeBody": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "pageActions": "Thao tác với trang",
+  "pageRotateRight": "Xoay phải",
+  "pageRotateLeft": "Xoay trái",
+  "pageMoveEarlier": "Đưa lên trước",
+  "pageMoveLater": "Đưa ra sau",
+  "pageMoveToDocument": "Chuyển sang tài liệu khác…",
+  "pageSplitFromHere": "Tách từ trang này thành tài liệu mới",
+  "pageMovedTo": "Đã chuyển trang sang \"{title}\"",
+  "@pageMovedTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "documentSplitTitle": "{title} (phần 2)",
+  "@documentSplitTitle": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "documentSplitDone": "Đã tách {count} trang sang \"{title}\"",
+  "@documentSplitDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "documentMergeInto": "Ghép tài liệu khác vào đây…",
+  "documentPickTitle": "Chọn tài liệu",
+  "documentNoOthers": "Chưa có tài liệu nào khác",
+  "documentMerged": "Đã ghép {count} trang từ \"{title}\"",
+  "@documentMerged": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  }
 }

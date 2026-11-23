@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:path_provider/path_provider.dart';
@@ -43,6 +44,7 @@ final class _NativeBindings implements PlatformBindings {
       if (libraryExists(root: _root)) {
         if (stored == null) return const LibraryKeyMissing();
         final h = await LibraryHandle.open(root: _root, dbKey: base64Decode(stored));
+        await _purgeExpiredTrash(h);
         return LibraryReady(RustLibraryRepository(h));
       }
       return await _create();
@@ -50,6 +52,15 @@ final class _NativeBindings implements PlatformBindings {
       return e.kind == ApiErrorKind.wrongKey ? const LibraryKeyMissing() : LibraryFailed(e);
     } on Object catch (e) {
       return LibraryFailed(e);
+    }
+  }
+
+  /// Xóa hẳn tài liệu đã nằm trong thùng rác quá 30 ngày. Lỗi ở đây không được chặn việc mở kho (thử lại lần sau).
+  static Future<void> _purgeExpiredTrash(LibraryHandle h) async {
+    try {
+      await h.purgeTrash(expiredOnly: true);
+    } on Object catch (e) {
+      debugPrint('dọn thùng rác lỗi: ${e.runtimeType}');
     }
   }
 

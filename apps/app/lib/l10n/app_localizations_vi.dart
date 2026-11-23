@@ -602,4 +602,119 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get scanCornerHint => 'Kéo để chỉnh; dùng phím mũi tên khi đang chọn';
+
+  @override
+  String get confirmTrashDocumentTitle => 'Chuyển vào thùng rác?';
+
+  @override
+  String confirmTrashDocumentBody(String title, int days) {
+    return '\"$title\" sẽ nằm trong thùng rác $days ngày rồi bị xóa hẳn. Có thể khôi phục trước đó.';
+  }
+
+  @override
+  String get actionMoveToTrash => 'Chuyển vào thùng rác';
+
+  @override
+  String get actionUndo => 'Hoàn tác';
+
+  @override
+  String get actionRestore => 'Khôi phục';
+
+  @override
+  String get actionDeleteForever => 'Xóa vĩnh viễn';
+
+  @override
+  String trashMoved(String title) {
+    return 'Đã chuyển \"$title\" vào thùng rác';
+  }
+
+  @override
+  String trashRestored(String title) {
+    return 'Đã khôi phục \"$title\"';
+  }
+
+  @override
+  String get trashTitle => 'Thùng rác';
+
+  @override
+  String get trashEmpty => 'Thùng rác trống';
+
+  @override
+  String trashHint(int days) {
+    return 'Tài liệu trong thùng rác tự xóa hẳn sau $days ngày.';
+  }
+
+  @override
+  String trashPurgeOn(String date) {
+    return 'Xóa hẳn ngày $date';
+  }
+
+  @override
+  String get trashEmptyAll => 'Dọn sạch thùng rác';
+
+  @override
+  String get confirmEmptyTrashTitle => 'Dọn sạch thùng rác?';
+
+  @override
+  String confirmEmptyTrashBody(int count) {
+    return '$count tài liệu sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.';
+  }
+
+  @override
+  String get confirmPurgeTitle => 'Xóa vĩnh viễn?';
+
+  @override
+  String confirmPurgeBody(String title) {
+    return '\"$title\" và mọi trang của nó sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.';
+  }
+
+  @override
+  String get pageActions => 'Thao tác với trang';
+
+  @override
+  String get pageRotateRight => 'Xoay phải';
+
+  @override
+  String get pageRotateLeft => 'Xoay trái';
+
+  @override
+  String get pageMoveEarlier => 'Đưa lên trước';
+
+  @override
+  String get pageMoveLater => 'Đưa ra sau';
+
+  @override
+  String get pageMoveToDocument => 'Chuyển sang tài liệu khác…';
+
+  @override
+  String get pageSplitFromHere => 'Tách từ trang này thành tài liệu mới';
+
+  @override
+  String pageMovedTo(String title) {
+    return 'Đã chuyển trang sang \"$title\"';
+  }
+
+  @override
+  String documentSplitTitle(String title) {
+    return '$title (phần 2)';
+  }
+
+  @override
+  String documentSplitDone(int count, String title) {
+    return 'Đã tách $count trang sang \"$title\"';
+  }
+
+  @override
+  String get documentMergeInto => 'Ghép tài liệu khác vào đây…';
+
+  @override
+  String get documentPickTitle => 'Chọn tài liệu';
+
+  @override
+  String get documentNoOthers => 'Chưa có tài liệu nào khác';
+
+  @override
+  String documentMerged(int count, String title) {
+    return 'Đã ghép $count trang từ \"$title\"';
+  }
 }

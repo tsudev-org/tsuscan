@@ -5,9 +5,11 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P6 - Quét bằng camera (Android)** - lõi + giao diện xong, chờ chạy thật qua adb + chế độ Sách/QR (phiếu
-  `logs/handover/20261119-07_p6-camera-cho-chay-that.md`)
-- [ ] P7 - Công cụ sửa + tổ chức
+- [ ] **P7a - Tổ chức trang + thùng rác** - mã + test xong trên `feat/p7a-organize`, chờ PR/CI + chạy thật (phiếu
+  `logs/handover/20261124-08_p7a-to-chuc-trang-thung-rac.md`)
+- [ ] P7b - Chú thích + chữ ký + che thông tin
+- [ ] P7c - OCR trong app + đặt tên thông minh, nhận diện giấy tờ, danh thiếp → vCard
+- [ ] Phiếu GP1 - Google Play Console (sau P6, cần 👤 bấm gửi duyệt); PRO1/PRO2 sau P8
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
 - [ ] P9 - Đồng bộ trong app
 - [ ] P10 - Bản máy tính + máy scan thật
@@ -20,9 +22,15 @@
 
 | Task | Agent | Bắt đầu |
 | --- | --- | --- |
-| P6 Quét bằng camera (`feat/p6-camera`) | agent-scan | 19/11/2026 |
+| P7a Tổ chức trang + thùng rác (`feat/p7a-organize`) | agent-scan | 24/11/2026 |
 
 ## Đã hoàn thành (mới nhất trên cùng)
+
+- 24/11/2026 - P6 Quét bằng camera (agent-scan, PR #9 squash `a7bee25`): dò mép thời gian thực trong lõi Rust, tự chụp,
+  chụp loạt, chế độ Tài liệu/CCCD/Danh thiếp/Bảng trắng/Ảnh/Sách (tách 2 trang)/QR-mã vạch, duyệt + sửa trang, nhớ chế
+  độ; chạy thật Galaxy M32 5G (Android 13): khung theo nhịp, ảnh làm việc 320 px; `.so` arm64 5,2 MB (`pages`/`barcode`
+  chuyển sang `tsuscan-imaging`); quyền duy nhất `CAMERA`; sửa màn khóa không che hộp thoại (lỗi P5); hạ `jni` 1.1.2.
+  Phiếu rà soát `docs/security-reviews/20261119-p6-camera.md`. Phiếu SEC1, AV1 ĐÓNG.
 
 - 19/11/2026 - P5 Khung app Flutter (agent-scan, PR #8 `feat/p5-app`): `apps/app` 6 đích + `crates/tsuscan-ffi` (crate
   `tsuscan_ffi`, flutter_rust_bridge 2.13.0 + cargokit); thư viện (thư mục, nhãn, lọc, phân trang `DATA_TABLE.md`,
@@ -61,6 +69,10 @@
   CI (quy ước + gitleaks), Dependabot.
 
 ## Quyết định quan trọng
+
+- 24/11/2026 - P7 chia P7a/P7b/P7c (`docs/PLAN.md`). Thùng rác 30 ngày bằng cột `trashed_ms` (lược đồ v2), tài liệu
+  trong thùng rác không có dòng FTS; chuyển trang giữa tài liệu luôn mã hóa lại bằng FK mới/DK đích
+  (`docs/security-reviews/20261124-p7a-organize.md`).
 
 - 19/11/2026 - App: `AppScope` + màn khóa nằm trong `MaterialApp.builder` (phủ mọi route/hộp thoại) - sửa lỗi màn khóa
   không che hộp thoại có từ P5. Quét: lõi Rust dò trên kênh Y khung xem trước, ảnh chụp giải mã một lần (opaque, xóa

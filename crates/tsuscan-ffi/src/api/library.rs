@@ -10,7 +10,7 @@ use std::sync::{Mutex, MutexGuard};
 
 use flutter_rust_bridge::frb;
 use image::{DynamicImage, ImageFormat, imageops::FilterType};
-use tsuscan_vault::store::{DB_FILE, DocumentFilter, NewPage};
+use tsuscan_vault::store::{DB_FILE, DocumentFilter, NewPage, TRASH_RETENTION_MS};
 use tsuscan_vault::{Key32, Vault};
 use zeroize::Zeroizing;
 
@@ -89,6 +89,17 @@ pub struct SearchHitDto {
     pub score: f64,
     /// Khớp đúng cả dấu.
     pub accent_exact: bool,
+}
+
+/// Tài liệu trong thùng rác.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrashedDocumentDto {
+    /// Thông tin tài liệu.
+    pub document: DocumentDto,
+    /// Lúc bỏ vào thùng rác (ms Unix).
+    pub trashed_ms: i64,
+    /// Lúc sẽ tự xóa hẳn (ms Unix).
+    pub purge_at_ms: i64,
 }
 
 /// Một trang danh sách tài liệu.
@@ -338,12 +349,67 @@ impl LibraryHandle {
             .update_document(&id, None, Some(folder_id.as_deref()))?)
     }
 
-    /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục).
+    /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục). Thao tác "Xóa" của người dùng đi qua
+    /// [`Self::trash_document`]; hàm này dành cho tài liệu rỗng vừa ghép xong.
     ///
     /// # Errors
     /// `NotFound`, `Storage`.
     pub fn delete_document(&self, id: String) -> ApiResult<()> {
         Ok(self.lock().delete_document(&id)?)
+    }
+
+    // ------------------------------------------------------------ thùng rác
+
+    /// Bỏ tài liệu vào thùng rác (tự xóa hẳn sau 30 ngày).
+    ///
+    /// # Errors
+    /// `NotFound`, `Storage`.
+    pub fn trash_document(&self, id: String) -> ApiResult<()> {
+        Ok(self.lock().trash_document(&id)?)
+    }
+
+    /// Đưa tài liệu khỏi thùng rác.
+    ///
+    /// # Errors
+    /// `NotFound`, `Storage`.
+    pub fn restore_document(&self, id: String) -> ApiResult<()> {
+        Ok(self.lock().restore_document(&id)?)
+    }
+
+    /// Tài liệu trong thùng rác, mới bỏ vào trước.
+    ///
+    /// # Errors
+    /// `Storage`.
+    pub fn list_trash(&self) -> ApiResult<Vec<TrashedDocumentDto>> {
+        Ok(self
+            .lock()
+            .list_trash()?
+            .into_iter()
+            .map(|t| TrashedDocumentDto {
+                purge_at_ms: t.trashed_ms.saturating_add(TRASH_RETENTION_MS),
+                trashed_ms: t.trashed_ms,
+                document: doc_dto(t.info),
+            })
+            .collect())
+    }
+
+    /// Xóa vĩnh viễn một tài liệu trong thùng rác.
+    ///
+    /// # Errors
+    /// `NotFound` (không ở thùng rác), `Storage`.
+    pub fn purge_document(&self, id: String) -> ApiResult<()> {
+        Ok(self.lock().purge_document(&id)?)
+    }
+
+    /// Dọn sạch thùng rác (`expired_only = false`) hoặc chỉ tài liệu đã quá 30 ngày (gọi lúc mở kho). Trả số tài liệu
+    /// đã xóa hẳn.
+    ///
+    /// # Errors
+    /// `Storage`.
+    pub fn purge_trash(&self, expired_only: bool) -> ApiResult<u32> {
+        let older = if expired_only { TRASH_RETENTION_MS } else { 0 };
+        let n = self.lock().purge_trash(now_ms(), older)?;
+        Ok(u32::try_from(n).unwrap_or(u32::MAX))
     }
 
     // ------------------------------------------------------------ trang
@@ -449,6 +515,63 @@ impl LibraryHandle {
         Ok(self.lock().delete_page(&page_id)?)
     }
 
+    /// Xoay trang theo chiều kim đồng hồ `quarter_turns` × 90° (lấy mod 4; 0 ⇒ không làm gì). Ảnh được giải mã, xoay,
+    /// mã hóa lại một lần; tệp cũ bị xóa hẳn. Chữ OCR giữ nguyên (hộp chữ cũ không còn đúng ⇒ bỏ blob).
+    ///
+    /// # Errors
+    /// `NotFound`, `UnsupportedImage`, `Storage`.
+    pub fn rotate_page(&self, page_id: String, quarter_turns: i32) -> ApiResult<()> {
+        let turns = quarter_turns.rem_euclid(4);
+        if turns == 0 {
+            return Ok(());
+        }
+        let mut vault = self.lock();
+        let text = vault
+            .list_pages(&vault_page_document(&vault, &page_id)?)?
+            .into_iter()
+            .find(|p| p.id == page_id)
+            .map(|p| p.ocr_text)
+            .unwrap_or_default();
+        let bytes = vault.page_image(&page_id)?;
+        let img = tsuscan_imaging::decode(&bytes)?;
+        drop(bytes);
+        let img = match turns {
+            1 => img.rotate90(),
+            2 => img.rotate180(),
+            _ => img.rotate270(),
+        };
+        let (w, h) = (img.width(), img.height());
+        let jpeg = encode_jpeg(&img, SCAN_JPEG_QUALITY)?;
+        drop(img);
+        Ok(vault.replace_page_image(&page_id, &jpeg, w, h, Some((&text, None)))?)
+    }
+
+    /// Sắp lại trang của tài liệu: `order` là hoán vị đúng của mọi trang.
+    ///
+    /// # Errors
+    /// `Storage` (thứ tự không khớp), `NotFound`.
+    pub fn reorder_pages(&self, document_id: String, order: Vec<String>) -> ApiResult<()> {
+        let refs: Vec<&str> = order.iter().map(String::as_str).collect();
+        Ok(self.lock().reorder_pages(&document_id, &refs)?)
+    }
+
+    /// Chuyển trang sang tài liệu khác (tách/ghép), chèn tại `at` (`None` = cuối). Ảnh được mã hóa lại bằng khóa của
+    /// tài liệu đích.
+    ///
+    /// # Errors
+    /// `InvalidInput` (rỗng/lặp/cùng tài liệu), `NotFound`, `Storage`.
+    pub fn move_pages(
+        &self,
+        page_ids: Vec<String>,
+        target_document_id: String,
+        at: Option<u32>,
+    ) -> ApiResult<()> {
+        let refs: Vec<&str> = page_ids.iter().map(String::as_str).collect();
+        Ok(self
+            .lock()
+            .move_pages(&refs, &target_document_id, at.map(|a| a as usize))?)
+    }
+
     // ------------------------------------------------------------ tìm kiếm
 
     /// Tìm không dấu trên tiêu đề + chữ OCR (truy vấn < 2 ký tự ⇒ rỗng).
@@ -495,4 +618,14 @@ pub(crate) fn encode_jpeg(img: &DynamicImage, quality: u8) -> ApiResult<Vec<u8>>
     let bytes = out.into_inner();
     debug_assert_eq!(image::guess_format(&bytes).ok(), Some(ImageFormat::Jpeg));
     Ok(bytes)
+}
+
+fn vault_page_document(vault: &Vault, page_id: &str) -> ApiResult<String> {
+    vault.page_document_id(page_id).map_err(ApiError::from)
+}
+
+fn now_ms() -> i64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| i64::try_from(d.as_millis()).unwrap_or(i64::MAX))
 }

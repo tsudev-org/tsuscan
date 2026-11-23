@@ -10,6 +10,7 @@ import '../../utils/format.dart';
 import 'document_page.dart';
 import 'import_images.dart';
 import 'page_thumbnail.dart';
+import 'trash_page.dart';
 
 /// Mã bảng để nhớ số bản ghi mỗi trang (`DATA_TABLE.md` mục 5).
 const libraryTableId = 'library.documents';
@@ -283,6 +284,12 @@ class _LibraryPageState extends State<LibraryPage> {
                 tooltip: l.libraryNewFolder,
                 onPressed: _newFolder,
                 icon: const Icon(Icons.create_new_folder_outlined),
+              ),
+              IconButton(
+                tooltip: l.trashTitle,
+                onPressed: () =>
+                    Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const TrashScreen())),
+                icon: const Icon(Icons.delete_outline),
               ),
               const SizedBox(width: TsSpace.s2),
             ],

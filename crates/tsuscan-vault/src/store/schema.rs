@@ -5,7 +5,7 @@ use rusqlite::Connection;
 use crate::error::{Result, VaultError};
 
 /// Phiên bản lược đồ hiện tại (`PRAGMA user_version`).
-pub const VERSION: i64 = 1;
+pub const VERSION: i64 = 2;
 
 const V1: &str = r"
 CREATE TABLE meta (
@@ -81,6 +81,13 @@ CREATE VIRTUAL TABLE search USING fts5(
 );
 ";
 
+/// v2 (P7a): thùng rác. `trashed_ms` = lúc bỏ vào thùng rác (NULL = không trong thùng rác). Tài liệu trong thùng rác
+/// vẫn giữ trang/tệp nhưng không hiện trong danh sách và không có dòng chỉ mục tìm kiếm.
+const V2: &str = r"
+ALTER TABLE documents ADD COLUMN trashed_ms INTEGER;
+CREATE INDEX documents_trash ON documents(deleted, trashed_ms);
+";
+
 /// Đưa lược đồ lên [`VERSION`].
 ///
 /// # Errors
@@ -94,6 +101,12 @@ pub fn migrate(conn: &mut Connection) -> Result<()> {
         let tx = conn.transaction()?;
         tx.execute_batch(V1)?;
         tx.pragma_update(None, "user_version", 1)?;
+        tx.commit()?;
+    }
+    if current < 2 {
+        let tx = conn.transaction()?;
+        tx.execute_batch(V2)?;
+        tx.pragma_update(None, "user_version", 2)?;
         tx.commit()?;
     }
     Ok(())

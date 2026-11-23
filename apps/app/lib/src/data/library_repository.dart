@@ -59,6 +59,17 @@ final class PageInfo {
   final String ocrText;
 }
 
+/// Tài liệu trong thùng rác: tự xóa hẳn lúc [purgeAtMs] (30 ngày sau khi bỏ vào).
+final class TrashedDocument {
+  const TrashedDocument({required this.document, required this.trashedMs, required this.purgeAtMs});
+  final Document document;
+  final int trashedMs;
+  final int purgeAtMs;
+}
+
+/// Số ngày tài liệu nằm trong thùng rác trước khi bị xóa hẳn (khớp `TRASH_RETENTION_DAYS` của kho).
+const trashRetentionDays = 30;
+
 /// Phạm vi thư mục khi liệt kê tài liệu.
 sealed class FolderScope {
   const FolderScope();
@@ -116,6 +127,17 @@ abstract interface class LibraryRepository {
   Future<void> moveDocument(String id, String? folderId);
   Future<void> deleteDocument(String id);
 
+  /// Bỏ vào thùng rác (thao tác "Xóa" của người dùng).
+  Future<void> trashDocument(String id);
+  Future<void> restoreDocument(String id);
+  Future<List<TrashedDocument>> listTrash();
+
+  /// Xóa vĩnh viễn một tài liệu trong thùng rác.
+  Future<void> purgeDocument(String id);
+
+  /// Dọn thùng rác: tất cả, hoặc chỉ tài liệu đã quá [trashRetentionDays] ngày. Trả số tài liệu đã xóa hẳn.
+  Future<int> purgeTrash({required bool expiredOnly});
+
   Future<List<PageInfo>> listPages(String documentId);
   Future<String> importImagePage(String documentId, Uint8List image);
 
@@ -123,6 +145,15 @@ abstract interface class LibraryRepository {
   Future<String> addScannedPage(String documentId, ScanCapture capture, ScanQuad? quad, ScanFilter filter);
   Future<Uint8List> pageThumbnail(String pageId, int maxSide);
   Future<void> deletePage(String pageId);
+
+  /// Xoay trang theo chiều kim đồng hồ [quarterTurns] × 90°.
+  Future<void> rotatePage(String pageId, int quarterTurns);
+
+  /// Sắp lại trang: [order] là hoán vị đủ mọi trang của tài liệu.
+  Future<void> reorderPages(String documentId, List<String> order);
+
+  /// Chuyển trang sang tài liệu khác, chèn tại [at] (`null` = cuối). Dùng cho tách/ghép tài liệu.
+  Future<void> movePages(List<String> pageIds, String targetDocumentId, {int? at});
 
   Future<List<SearchHitDto>> search(String query, {int limit = 200});
 
@@ -198,6 +229,20 @@ final class RustLibraryRepository implements LibraryRepository {
   Future<void> deleteDocument(String id) => _h.deleteDocument(id: id);
 
   @override
+  Future<void> trashDocument(String id) => _h.trashDocument(id: id);
+  @override
+  Future<void> restoreDocument(String id) => _h.restoreDocument(id: id);
+  @override
+  Future<List<TrashedDocument>> listTrash() async => [
+    for (final t in await _h.listTrash())
+      TrashedDocument(document: _doc(t.document), trashedMs: t.trashedMs.toInt(), purgeAtMs: t.purgeAtMs.toInt()),
+  ];
+  @override
+  Future<void> purgeDocument(String id) => _h.purgeDocument(id: id);
+  @override
+  Future<int> purgeTrash({required bool expiredOnly}) => _h.purgeTrash(expiredOnly: expiredOnly);
+
+  @override
   Future<List<PageInfo>> listPages(String documentId) async => [
     for (final p in await _h.listPages(documentId: documentId))
       PageInfo(id: p.id, position: p.position.toInt(), width: p.width, height: p.height, ocrText: p.ocrText),
@@ -220,6 +265,14 @@ final class RustLibraryRepository implements LibraryRepository {
   Future<Uint8List> pageThumbnail(String pageId, int maxSide) => _h.pageThumbnail(pageId: pageId, maxSide: maxSide);
   @override
   Future<void> deletePage(String pageId) => _h.deletePage(pageId: pageId);
+  @override
+  Future<void> rotatePage(String pageId, int quarterTurns) => _h.rotatePage(pageId: pageId, quarterTurns: quarterTurns);
+  @override
+  Future<void> reorderPages(String documentId, List<String> order) =>
+      _h.reorderPages(documentId: documentId, order: order);
+  @override
+  Future<void> movePages(List<String> pageIds, String targetDocumentId, {int? at}) =>
+      _h.movePages(pageIds: pageIds, targetDocumentId: targetDocumentId, at: at);
 
   @override
   Future<List<SearchHitDto>> search(String query, {int limit = 200}) => _h.search(query: query, limit: limit);

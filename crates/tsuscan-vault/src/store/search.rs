@@ -29,10 +29,10 @@ pub struct SearchHit {
     pub accent_exact: bool,
 }
 
-/// Lập lại dòng chỉ mục của tài liệu từ tiêu đề + chữ OCR các trang chưa xóa. Tài liệu đã xóa ⇒ bỏ dòng.
+/// Lập lại dòng chỉ mục của tài liệu từ tiêu đề + chữ OCR các trang chưa xóa. Tài liệu đã xóa hoặc trong thùng rác ⇒ bỏ dòng.
 pub(super) fn reindex(conn: &Connection, document_id: &str) -> Result<()> {
     let (rowid, title, deleted): (i64, String, i64) = conn.query_row(
-        "SELECT rowid, title, deleted FROM documents WHERE id = ?1",
+        "SELECT rowid, title, deleted OR trashed_ms IS NOT NULL FROM documents WHERE id = ?1",
         [document_id],
         |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
     )?;
@@ -92,7 +92,7 @@ pub(super) fn search(conn: &Connection, query: &str, limit: usize) -> Result<Vec
     let mut st = conn.prepare(
         "SELECT s.rowid, d.id, d.title, d.updated_ms, bm25(search, 10.0, 1.0, 0.0, 0.0)
          FROM search s JOIN documents d ON d.rowid = s.rowid
-         WHERE search MATCH ?1 AND d.deleted = 0",
+         WHERE search MATCH ?1 AND d.deleted = 0 AND d.trashed_ms IS NULL",
     )?;
     let mut hits: Vec<(SearchHit, i64)> = st
         .query_map([q_norm], |r| {

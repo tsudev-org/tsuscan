@@ -74,6 +74,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ScanQuad dco_decode_box_autoadd_scan_quad(dynamic raw);
 
   @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw);
+
+  @protected
   DocumentDto dco_decode_document_dto(dynamic raw);
 
   @protected
@@ -137,10 +140,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TagDto> dco_decode_list_tag_dto(dynamic raw);
 
   @protected
+  List<TrashedDocumentDto> dco_decode_list_trashed_document_dto(dynamic raw);
+
+  @protected
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
   ScanQuad? dco_decode_opt_box_autoadd_scan_quad(dynamic raw);
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw);
 
   @protected
   List<ScanQuad>? dco_decode_opt_list_scan_quad(dynamic raw);
@@ -159,6 +168,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   TagDto dco_decode_tag_dto(dynamic raw);
+
+  @protected
+  TrashedDocumentDto dco_decode_trashed_document_dto(dynamic raw);
 
   @protected
   int dco_decode_u_32(dynamic raw);
@@ -219,6 +231,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ScanQuad sse_decode_box_autoadd_scan_quad(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   DocumentDto sse_decode_document_dto(SseDeserializer deserializer);
@@ -284,10 +299,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<TagDto> sse_decode_list_tag_dto(SseDeserializer deserializer);
 
   @protected
+  List<TrashedDocumentDto> sse_decode_list_trashed_document_dto(SseDeserializer deserializer);
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
   ScanQuad? sse_decode_opt_box_autoadd_scan_quad(SseDeserializer deserializer);
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer);
 
   @protected
   List<ScanQuad>? sse_decode_opt_list_scan_quad(SseDeserializer deserializer);
@@ -306,6 +327,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   TagDto sse_decode_tag_dto(SseDeserializer deserializer);
+
+  @protected
+  TrashedDocumentDto sse_decode_trashed_document_dto(SseDeserializer deserializer);
 
   @protected
   int sse_decode_u_32(SseDeserializer deserializer);
@@ -374,6 +398,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_box_autoadd_scan_quad(ScanQuad self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer);
+
+  @protected
   void sse_encode_document_dto(DocumentDto self, SseSerializer serializer);
 
   @protected
@@ -437,10 +464,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_tag_dto(List<TagDto> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_trashed_document_dto(List<TrashedDocumentDto> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_box_autoadd_scan_quad(ScanQuad? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer);
 
   @protected
   void sse_encode_opt_list_scan_quad(List<ScanQuad>? self, SseSerializer serializer);
@@ -459,6 +492,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_tag_dto(TagDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_trashed_document_dto(TrashedDocumentDto self, SseSerializer serializer);
 
   @protected
   void sse_encode_u_32(int self, SseSerializer serializer);

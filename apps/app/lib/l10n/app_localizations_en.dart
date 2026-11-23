@@ -614,4 +614,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scanCornerHint => 'Drag to adjust; use arrow keys when focused';
+
+  @override
+  String get confirmTrashDocumentTitle => 'Move to trash?';
+
+  @override
+  String confirmTrashDocumentBody(String title, int days) {
+    return '\"$title\" stays in the trash for $days days and is then permanently deleted. You can restore it before then.';
+  }
+
+  @override
+  String get actionMoveToTrash => 'Move to trash';
+
+  @override
+  String get actionUndo => 'Undo';
+
+  @override
+  String get actionRestore => 'Restore';
+
+  @override
+  String get actionDeleteForever => 'Delete forever';
+
+  @override
+  String trashMoved(String title) {
+    return 'Moved \"$title\" to the trash';
+  }
+
+  @override
+  String trashRestored(String title) {
+    return 'Restored \"$title\"';
+  }
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashEmpty => 'The trash is empty';
+
+  @override
+  String trashHint(int days) {
+    return 'Documents in the trash are permanently deleted after $days days.';
+  }
+
+  @override
+  String trashPurgeOn(String date) {
+    return 'Deleted for good on $date';
+  }
+
+  @override
+  String get trashEmptyAll => 'Empty trash';
+
+  @override
+  String get confirmEmptyTrashTitle => 'Empty the trash?';
+
+  @override
+  String confirmEmptyTrashBody(int count) {
+    return '$count documents will be permanently deleted from this device. This cannot be undone.';
+  }
+
+  @override
+  String get confirmPurgeTitle => 'Delete forever?';
+
+  @override
+  String confirmPurgeBody(String title) {
+    return '\"$title\" and all of its pages will be permanently deleted from this device. This cannot be undone.';
+  }
+
+  @override
+  String get pageActions => 'Page actions';
+
+  @override
+  String get pageRotateRight => 'Rotate right';
+
+  @override
+  String get pageRotateLeft => 'Rotate left';
+
+  @override
+  String get pageMoveEarlier => 'Move earlier';
+
+  @override
+  String get pageMoveLater => 'Move later';
+
+  @override
+  String get pageMoveToDocument => 'Move to another document…';
+
+  @override
+  String get pageSplitFromHere => 'Split into a new document from here';
+
+  @override
+  String pageMovedTo(String title) {
+    return 'Moved the page to \"$title\"';
+  }
+
+  @override
+  String documentSplitTitle(String title) {
+    return '$title (part 2)';
+  }
+
+  @override
+  String documentSplitDone(int count, String title) {
+    return 'Moved $count pages to \"$title\"';
+  }
+
+  @override
+  String get documentMergeInto => 'Merge another document into this…';
+
+  @override
+  String get documentPickTitle => 'Choose a document';
+
+  @override
+  String get documentNoOthers => 'There are no other documents';
+
+  @override
+  String documentMerged(int count, String title) {
+    return 'Merged $count pages from \"$title\"';
+  }
 }
