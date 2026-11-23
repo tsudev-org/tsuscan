@@ -3,7 +3,7 @@
 - **Mã phiếu**: 20261119-07
 - **Từ**: agent-scan (phiên P6) - **Đến**: phiên P6 tiếp theo
 - **Thời điểm**: 19/11/2026
-- **Trạng thái**: MỞ
+- **Trạng thái**: ĐÓNG (24/11/2026 - PR #9 gộp squash `a7bee25`)
 - **Nhánh git**: `feat/p6-camera` (tách từ `main` sau PR #8). PR vào `main`, squash.
 
 ## 1. Việc đã làm xong
