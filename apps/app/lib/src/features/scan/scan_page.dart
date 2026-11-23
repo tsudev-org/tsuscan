@@ -1,13 +1,18 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../../app_scope.dart';
 import '../../data/library_repository.dart';
+import '../../data/scan_engine.dart';
 import '../../ui/theme/app_theme.dart';
 import '../../ui/widgets/feedback.dart';
 import '../library/document_page.dart';
 import '../library/import_images.dart';
 import 'camera_scan_page.dart';
+import 'codes_sheet.dart';
 import 'scan_labels.dart';
 import 'scan_review_page.dart';
 import 'scan_session.dart';
@@ -25,8 +30,16 @@ class ScanPage extends StatefulWidget {
 }
 
 class _ScanPageState extends State<ScanPage> {
-  ScanMode _mode = ScanMode.document;
+  ScanMode? _picked;
   bool _busy = false;
+
+  /// Chế độ đã chọn, mặc định là chế độ dùng lần trước.
+  ScanMode get _mode => _picked ?? ScanMode.parse(AppScope.of(context).settings.scanMode);
+
+  void _setMode(ScanMode m) {
+    setState(() => _picked = m);
+    unawaited(AppScope.of(context).settings.setScanMode(m.name));
+  }
 
   bool get _camera => widget.cameraAvailable ?? cameraScanSupported;
 
@@ -44,7 +57,7 @@ class _ScanPageState extends State<ScanPage> {
         context,
         rootNavigator: true,
       ).push(MaterialPageRoute<String>(fullscreenDialog: true, builder: (_) => CameraScanPage(session: session)));
-      if (mounted) setState(() => _mode = session.mode);
+      if (mounted && session.mode != _mode) _setMode(session.mode);
       if (id != null) await _openDocument(id);
     } finally {
       session.dispose();
@@ -59,6 +72,10 @@ class _ScanPageState extends State<ScanPage> {
       final images = await pickImages();
       if (images.isEmpty || !mounted) return;
       setState(() => _busy = true);
+      if (_mode.readCodes) {
+        await _readCodes(app.platform.scan, images);
+        return;
+      }
       var skipped = 0;
       for (final img in images) {
         try {
@@ -83,6 +100,26 @@ class _ScanPageState extends State<ScanPage> {
       session.dispose();
       if (mounted && _busy) setState(() => _busy = false);
     }
+  }
+
+  /// Chế độ QR với ảnh có sẵn: đọc mã trên từng ảnh, không lưu trang.
+  Future<void> _readCodes(ScanEngine engine, List<Uint8List> images) async {
+    final codes = <ScannedCode>{};
+    for (final img in images) {
+      ScanCapture? cap;
+      try {
+        cap = await engine.open(img);
+        codes.addAll(await cap.readCodes());
+      } on ApiError catch (e) {
+        if (e.kind != ApiErrorKind.unsupportedImage && e.kind != ApiErrorKind.imageTooLarge) rethrow;
+      } finally {
+        cap?.dispose();
+        img.fillRange(0, img.length, 0);
+      }
+    }
+    if (!mounted) return;
+    setState(() => _busy = false);
+    await showScannedCodes(context, codes.toList());
   }
 
   @override
@@ -121,7 +158,7 @@ class _ScanPageState extends State<ScanPage> {
                       avatar: Icon(m.icon, size: 18),
                       label: Text(m.label(l)),
                       selected: m == _mode,
-                      onSelected: _busy ? null : (_) => setState(() => _mode = m),
+                      onSelected: _busy ? null : (_) => _setMode(m),
                     ),
                 ],
               ),

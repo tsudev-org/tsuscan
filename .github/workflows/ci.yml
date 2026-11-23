@@ -207,6 +207,16 @@ jobs:
           cd ../.. && cargo fmt --all
           git diff --exit-code -- apps/app/lib crates/tsuscan-ffi/src \
             || { echo "::error::Tệp sinh đã cũ - chạy scripts/gen-bridge.sh, flutter gen-l10n, dart run tool/gen_tokens.dart"; exit 1; }
+      - name: Không dùng gói Dart đã bị rút lại (retracted) hoặc dính cảnh báo bảo mật
+        working-directory: apps/app
+        # jni 1.2.0 (rút lại) làm path_provider_android ném lỗi ngay trong main() ở bản profile/release: app treo màn
+        # khởi động mà test Linux + build debug không bắt được (phiếu 20261119-08).
+        run: |
+          set -euo pipefail
+          flutter pub outdated --json > "$RUNNER_TEMP/outdated.json"
+          bad=$(jq -r '.packages[] | select(.isCurrentRetracted == true or .isCurrentAffectedByAdvisory == true)
+            | "\(.package) \(.current.version)"' "$RUNNER_TEMP/outdated.json")
+          if [ -n "$bad" ]; then echo "::error::pubspec.lock có gói bị rút lại/dính cảnh báo bảo mật: $bad"; exit 1; fi
       - name: Định dạng, phân tích, test
         working-directory: apps/app
         run: |

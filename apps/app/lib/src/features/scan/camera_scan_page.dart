@@ -9,9 +9,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../app_scope.dart';
 import '../../data/scan_engine.dart';
 import '../../services/app_lock.dart';
+import '../../services/system_settings.dart';
 import '../../ui/theme/app_theme.dart';
 import '../../ui/widgets/feedback.dart';
 import '../../utils/temp_file.dart';
+import 'codes_sheet.dart';
 import 'quad_view.dart';
 import 'scan_labels.dart';
 import 'scan_review_page.dart';
@@ -23,6 +25,12 @@ bool get cameraScanSupported =>
 
 /// Khoảng tối thiểu giữa hai lần dò trên khung xem trước (≈ 8 khung/giây là đủ mượt, tiết kiệm pin).
 const _detectInterval = Duration(milliseconds: 120);
+
+/// Khoảng giữa hai lần đọc mã ở chế độ QR (đọc trên trọn khung, nặng hơn dò mép).
+const _codesInterval = Duration(milliseconds: 300);
+
+/// Sau khi đóng bảng kết quả, bỏ qua đúng các mã vừa hiện trong khoảng này (mã vẫn nằm trong khung).
+const _codesCooldown = Duration(seconds: 3);
 
 /// Màn chụp toàn màn hình: xem trước + tứ giác dò được, tự chụp khi ổn định, chụp loạt, đèn, chế độ. Trả id tài liệu
 /// đã lưu (hoặc `null`). Camera chỉ chạy khi màn này ở tiền cảnh: app xuống nền thì giải phóng ngay.
@@ -43,15 +51,22 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   bool _starting = false;
 
   ScanQuad? _quad;
-  bool _detecting = false;
-  DateTime _lastDetect = DateTime.fromMillisecondsSinceEpoch(0);
+  // Lấy khung theo nhịp: nhận MỘT khung rồi tắt luồng, xử lý xong mới hẹn bật lại.
+  bool _frameTaken = false;
+  Timer? _restart;
+  bool _sheetOpen = false;
+  Set<ScannedCode> _lastCodes = const {};
+  DateTime _lastCodesAt = DateTime.fromMillisecondsSinceEpoch(0);
   final _tracker = AutoCaptureTracker();
   late bool _auto = widget.session.mode.autoCapture;
   FlashMode _flash = FlashMode.off;
   bool _capturing = false;
   bool _flashAnim = false;
   bool _inReview = false;
+  // Người dùng vừa được đưa sang Cài đặt để bật quyền ⇒ khi quay lại thì thử mở camera.
+  bool _openedSettings = false;
   AppLockController? _lock;
+  final _perf = _DetectPerf();
 
   ScanSession get _s => widget.session;
 
@@ -91,7 +106,11 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      if (!_inReview) unawaited(_start());
+      // Hộp xin quyền của hệ thống cũng làm app inactive → resumed: bị từ chối thì KHÔNG tự xin lại (vòng hỏi lặp),
+      // chỉ thử lại khi người dùng bấm "Thử lại" hoặc vừa quay về từ Cài đặt.
+      if (_inReview || (_error == _CamError.denied && !_openedSettings)) return;
+      _openedSettings = false;
+      unawaited(_start());
     } else if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
       unawaited(_stop());
     }
@@ -140,6 +159,7 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   }
 
   Future<void> _stop() async {
+    _restart?.cancel();
     final c = _ctrl;
     _ctrl = null;
     _quad = null;
@@ -155,23 +175,81 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
 
   Future<void> _startStream() async {
     final c = _ctrl;
-    if (c == null || c.value.isStreamingImages) return;
-    await c.startImageStream(_onFrame);
+    if (c == null || c.value.isStreamingImages || _capturing || _sheetOpen || !_s.engine.supportsDetection) return;
+    _restart?.cancel();
+    _frameTaken = false;
+    try {
+      await c.startImageStream(_onFrame);
+    } on CameraException {
+      // Camera đang đóng: bỏ qua.
+    }
   }
 
+  /// Plugin `camera` chép CẢ 3 mặt phẳng YUV của MỌI khung (~2,2 MB, 30 khung/giây) sang Dart: đo trên Galaxy M32 5G,
+  /// để luồng chạy liên tục làm app ăn > 300% CPU (GC Java 100%) và kết quả dò phải xếp hàng. Vì vậy chỉ lấy một khung
+  /// rồi tắt luồng (khung thừa bị bỏ ngay ở tầng native), xử lý xong mới hẹn bật lại.
   void _onFrame(CameraImage img) {
-    if (_detecting || _capturing || !mounted || !_s.engine.supportsDetection) return;
-    final now = DateTime.now();
-    if (now.difference(_lastDetect) < _detectInterval) return;
-    _lastDetect = now;
+    final c = _ctrl;
+    if (_frameTaken || c == null || !mounted) return;
+    _frameTaken = true;
+    unawaited(_pauseStream(c));
+    final started = DateTime.now();
+    unawaited(_analyze(img).whenComplete(() => _scheduleNext(started)));
+  }
+
+  Future<void> _pauseStream(CameraController c) async {
+    try {
+      if (c.value.isStreamingImages) await c.stopImageStream();
+    } on CameraException {
+      // Đang đóng: bỏ qua.
+    }
+  }
+
+  void _scheduleNext(DateTime started) {
+    if (!mounted || _ctrl == null || _capturing || _sheetOpen) return;
+    final interval = _s.mode.readCodes ? _codesInterval : _detectInterval;
+    final wait = interval - DateTime.now().difference(started);
+    _restart?.cancel();
+    _restart = Timer(wait.isNegative ? Duration.zero : wait, () => unawaited(_startStream()));
+  }
+
+  Future<void> _analyze(CameraImage img) async {
     final y = img.planes.first;
-    _detecting = true;
-    unawaited(
-      _s.engine
-          .detectPreview(y.bytes, img.width, img.height, y.bytesPerRow, _desc?.sensorOrientation ?? 90)
-          .then(_onQuad, onError: (Object _) => _onQuad(null))
-          .whenComplete(() => _detecting = false),
-    );
+    if (_s.mode.readCodes) {
+      List<ScannedCode> codes;
+      try {
+        codes = await _s.engine.readCodesPreview(y.bytes, img.width, img.height, y.bytesPerRow);
+      } on Object {
+        codes = const [];
+      }
+      await _onCodes(codes);
+      return;
+    }
+    final sw = Stopwatch()..start();
+    ScanQuad? q;
+    try {
+      q = await _s.engine.detectPreview(y.bytes, img.width, img.height, y.bytesPerRow, _desc?.sensorOrientation ?? 90);
+    } on Object {
+      q = null;
+    }
+    _perf.add(sw.elapsedMicroseconds, img.width, img.height);
+    _onQuad(q);
+  }
+
+  Future<void> _onCodes(List<ScannedCode> codes) async {
+    if (!mounted || codes.isEmpty || _ctrl == null || !_s.mode.readCodes) return;
+    final found = codes.toSet();
+    final recent = DateTime.now().difference(_lastCodesAt) < _codesCooldown;
+    if (recent && found.difference(_lastCodes).isEmpty) return;
+    _sheetOpen = true;
+    unawaited(HapticFeedback.mediumImpact());
+    try {
+      await showScannedCodes(context, codes);
+    } finally {
+      _sheetOpen = false;
+      _lastCodes = found;
+      _lastCodesAt = DateTime.now();
+    }
   }
 
   void _onQuad(ScanQuad? q) {
@@ -254,6 +332,7 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   }
 
   void _setMode(ScanMode m) {
+    unawaited(AppScope.of(context).settings.setScanMode(m.name));
     setState(() {
       _s.mode = m;
       _auto = m.autoCapture;
@@ -271,6 +350,8 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   }
 
   String _hintBody(AppLocalizations l) {
+    if (_s.mode.readCodes) return l.scanHintCodes;
+    if (_s.mode.splitBook && _quad == null && !_tracker.waitingForChange) return l.scanHintBook;
     if (!_auto || !_s.mode.autoCapture) return l.scanHintManual;
     if (_tracker.waitingForChange) return l.scanHintNext;
     if (_quad == null) return l.scanHintFind;
@@ -280,23 +361,27 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, _) async {
-        if (didPop) return;
-        final nav = Navigator.of(context);
-        if (await _confirmLeave() && mounted) nav.pop();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _topBar(l),
-              Expanded(child: _preview(l)),
-              _modes(l),
-              _bottomBar(l),
-            ],
+    // Nền đen ⇒ biểu tượng thanh trạng thái/điều hướng màu sáng.
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) async {
+          if (didPop) return;
+          final nav = Navigator.of(context);
+          if (await _confirmLeave() && mounted) nav.pop();
+        },
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _topBar(l),
+                Expanded(child: _preview(l)),
+                _modes(l),
+                _bottomBar(l),
+              ],
+            ),
           ),
         ),
       ),
@@ -361,12 +446,27 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
                 style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: TsSpace.s4),
-              FilledButton(
-                onPressed: () {
-                  setState(() => _error = null);
-                  unawaited(_start());
-                },
-                child: Text(l.actionRetry),
+              Wrap(
+                spacing: TsSpace.s3,
+                runSpacing: TsSpace.s3,
+                alignment: WrapAlignment.center,
+                children: [
+                  if (err == _CamError.denied && canOpenAppSettings)
+                    FilledButton(
+                      onPressed: () async {
+                        _openedSettings = await openAppSettings();
+                      },
+                      child: Text(l.scanOpenSettings),
+                    ),
+                  OutlinedButton(
+                    style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
+                    onPressed: () {
+                      setState(() => _error = null);
+                      unawaited(_start());
+                    },
+                    child: Text(l.actionRetry),
+                  ),
+                ],
               ),
             ],
           ),
@@ -476,12 +576,16 @@ class _CameraScanPageState extends State<CameraScanPage> with WidgetsBindingObse
                     ),
             ),
             const Spacer(),
-            _Shutter(
-              label: l.scanShutter,
-              progress: _auto && _s.mode.autoCapture ? _tracker.progress : 0,
-              busy: _capturing,
-              onPressed: _ctrl == null ? null : () => _capture(),
-            ),
+            // QR: đọc liên tục trên khung xem trước, không chụp trang.
+            if (_s.mode.readCodes)
+              const SizedBox(width: 76, height: 76, child: Icon(Icons.qr_code_scanner, color: Colors.white, size: 40))
+            else
+              _Shutter(
+                label: l.scanShutter,
+                progress: _auto && _s.mode.autoCapture ? _tracker.progress : 0,
+                busy: _capturing,
+                onPressed: _ctrl == null ? null : () => _capture(),
+              ),
             const Spacer(),
             SizedBox(
               width: 64,
@@ -540,5 +644,25 @@ class _Shutter extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Đo thời gian một lượt dò khung xem trước (chuyển byte qua cầu + dò trong Rust), chỉ ở bản debug/profile: in trung
+/// bình và p95 mỗi 50 lượt ra log để kiểm ngưỡng `docs/PLAN.md` (≤ 33 ms/khung) trên máy thật. Bản phát hành bỏ qua.
+class _DetectPerf {
+  final _us = <int>[];
+
+  void add(int us, int w, int h) {
+    if (kReleaseMode) return;
+    _us.add(us);
+    if (_us.length < 50) return;
+    final sorted = [..._us]..sort();
+    final mean = sorted.reduce((a, b) => a + b) / sorted.length / 1000;
+    final p95 = sorted[(sorted.length * 0.95).floor() - 1] / 1000;
+    debugPrint(
+      'tsuscan.detect_preview ${w}x$h n=${sorted.length} mean=${mean.toStringAsFixed(1)}ms '
+      'p95=${p95.toStringAsFixed(1)}ms max=${(sorted.last / 1000).toStringAsFixed(1)}ms',
+    );
+    _us.clear();
   }
 }

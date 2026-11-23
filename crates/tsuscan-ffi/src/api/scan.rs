@@ -5,24 +5,31 @@
 //! cần biết kích thước điểm ảnh của cảm biến hay ảnh chụp. Mọi dữ liệu ảnh ở lại trong máy (ADR-0002).
 
 use flutter_rust_bridge::frb;
-use image::{DynamicImage, GrayImage, imageops::FilterType};
+use image::{DynamicImage, GrayImage, imageops, imageops::FilterType};
 use tsuscan_imaging::{
-    DetectOptions, Filter, Interpolation, Point, Quad, WarpOptions, detect_luma, detect_with,
+    DetectOptions, Filter, Homography, Interpolation, Point, Quad, WarpOptions, detect_luma, detect_with,
 };
 use zeroize::Zeroize;
 
 use super::error::{ApiError, ApiErrorKind, ApiResult};
 
-/// Cạnh dài ảnh làm việc khi dò trên khung xem trước: nhỏ hơn mặc định 640 để giữ < 20 ms/khung trên máy tầm trung.
-pub const PREVIEW_WORKING_SIZE: u32 = 480;
+/// Cạnh dài ảnh làm việc khi dò trên khung xem trước. Đo trên Galaxy M32 5G (khung 1440x1080, 30 ảnh tổng hợp):
+/// 320 px TB 21 ms / IoU 0,971; 480 px 40 ms / 0,979; 640 px 67 ms / 0,998. Khung xem trước chỉ để vẽ khung và quyết
+/// định tự chụp - ảnh chụp được dò lại ở độ phân giải đầy đủ ([`CapturedImage::detect`]) - nên chọn 320 để đạt
+/// ngưỡng ≤ 33 ms/khung của `docs/PLAN.md`.
+pub const PREVIEW_WORKING_SIZE: u32 = 320;
 /// Cạnh lớn nhất của khung xem trước chấp nhận (camera xem trước thường ≤ 1920).
 pub const MAX_PREVIEW_SIDE: u32 = 4096;
+/// Bước hàng lớn nhất khi Dart chỉ gửi một phần các hàng của khung xem trước.
+pub const MAX_PREVIEW_ROW_STEP: u32 = 16;
 /// Cạnh dài tối đa của trang lưu vào kho (≈ 500 dpi trên A4 - đủ cho OCR, chặn ảnh 50 MP phình kho).
 pub const MAX_SCAN_SIDE: u32 = 4096;
 /// Cạnh dài tối đa của ảnh xem trước kết quả trả về Dart.
 pub const MAX_RENDER_SIDE: u32 = 2048;
 /// Chất lượng JPEG trang quét lưu vào kho.
 pub const SCAN_JPEG_QUALITY: u8 = 90;
+/// Cạnh dài ảnh nắn tạm khi tìm gáy sách (bộ tìm gáy tự thu về 600 px; thừa chút cho nội suy).
+const BOOK_GUTTER_SIDE: u32 = 1200;
 /// Lề cho phép ngoài khung khi người dùng kéo góc (sau đó bị kẹp về 0..1).
 const CORNER_SLACK: f64 = 0.05;
 
@@ -35,6 +42,45 @@ pub struct ScanQuad {
     pub confidence: f32,
 }
 
+/// Một QR/mã vạch đọc được (giải mã hoàn toàn trên máy).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScanBarcode {
+    /// Loại mã (`qrcode`, `ean 13`, `code 128`...).
+    pub format: String,
+    /// Nội dung đã giải mã (dữ liệu không tin cậy: Dart chỉ hiển thị/sao chép, không tự mở).
+    pub text: String,
+}
+
+fn barcodes_of(img: &DynamicImage) -> Vec<ScanBarcode> {
+    tsuscan_imaging::barcode::scan(img)
+        .into_iter()
+        .map(|b| ScanBarcode {
+            format: b.format,
+            text: b.text,
+        })
+        .collect()
+}
+
+/// Đọc QR/mã vạch trên mặt phẳng Y đầy đủ của một khung xem trước (chế độ QR). Không thấy mã ⇒ danh sách rỗng.
+///
+/// # Errors
+/// `InvalidInput` khi kích thước/stride không hợp lệ hoặc bộ đệm thiếu byte.
+pub fn scan_barcodes_preview(
+    luma: Vec<u8>,
+    width: u32,
+    height: u32,
+    row_stride: u32,
+) -> ApiResult<Vec<ScanBarcode>> {
+    if !(16..=MAX_PREVIEW_SIDE).contains(&width) || !(16..=MAX_PREVIEW_SIDE).contains(&height) {
+        return Err(ApiError::new(
+            ApiErrorKind::InvalidInput,
+            "kích thước khung xem trước",
+        ));
+    }
+    let gray = luma_plane(luma, width, height, row_stride)?;
+    Ok(barcodes_of(&DynamicImage::ImageLuma8(gray)))
+}
+
 /// Mã các bộ lọc theo thứ tự hiển thị (`original`, `auto`, `color`, `gray`, `bw`, `shadow`, `whiteboard`).
 #[frb(sync)]
 #[must_use]
@@ -42,36 +88,78 @@ pub fn scan_filters() -> Vec<String> {
     Filter::ALL.iter().map(|f| f.code().to_owned()).collect()
 }
 
-/// Dò tài liệu trên mặt phẳng độ sáng (kênh Y của YUV420/NV21) của một khung xem trước.
+/// Kích thước ảnh làm việc (cạnh dài [`PREVIEW_WORKING_SIZE`], giữ tỉ lệ) của khung `width` x `height`.
+fn preview_working_dims(width: u32, height: u32) -> (u32, u32) {
+    let long = width.max(height);
+    if long <= PREVIEW_WORKING_SIZE {
+        return (width, height);
+    }
+    let k = f64::from(PREVIEW_WORKING_SIZE) / f64::from(long);
+    let tw = ((f64::from(width) * k).round() as u32).max(1);
+    let th = ((f64::from(height) * k).round() as u32).max(1);
+    (tw, th)
+}
+
+/// Bước hàng Dart nên dùng khi gửi khung `width` x `height`: chỉ chép hàng 0, k, 2k... mà ảnh làm việc vẫn đủ hàng.
 ///
-/// `row_stride` là số byte mỗi hàng (≥ `width`, có đệm). `rotation` là số độ (0/90/180/270) phải xoay ảnh cảm biến
-/// theo chiều kim đồng hồ để đúng chiều hiển thị; tọa độ trả về đã xoay theo đó.
+/// Mã cầu sinh ra giải mã `Vec<u8>` từng byte và Dart chép bộ đệm nhiều lần: đo trên Galaxy M32 5G, riêng việc chuyển
+/// trọn mặt phẳng Y 1440x1080 (1,5 MB) đã tốn 15-50 ms/khung. Mép giấy là cạnh bậc nên lấy mẫu hàng không làm mất nó.
+#[frb(sync)]
+#[must_use]
+pub fn preview_row_step(width: u32, height: u32) -> u32 {
+    let (_, th) = preview_working_dims(width, height);
+    (height / th.max(1)).clamp(1, MAX_PREVIEW_ROW_STEP)
+}
+
+/// Dò tài liệu trên mặt phẳng độ sáng (kênh Y của YUV420/NV21) của một khung xem trước `width` x `height`.
+///
+/// `luma` chứa các hàng 0, `row_step`, 2·`row_step`... của khung (xem [`preview_row_step`]; 1 = mọi hàng), hàng thứ i
+/// bắt đầu ở byte `i * row_stride` (≥ `width`, có thể có đệm). `rotation` là số độ (0/90/180/270) phải xoay ảnh cảm
+/// biến theo chiều kim đồng hồ để đúng chiều hiển thị; tọa độ trả về đã xoay theo đó.
 ///
 /// # Errors
-/// `InvalidInput` khi kích thước/stride/góc xoay không hợp lệ hoặc bộ đệm thiếu byte.
+/// `InvalidInput` khi kích thước/stride/bước hàng/góc xoay không hợp lệ hoặc bộ đệm thiếu byte.
 pub fn detect_preview(
     luma: Vec<u8>,
     width: u32,
     height: u32,
     row_stride: u32,
+    row_step: u32,
     rotation: u32,
 ) -> ApiResult<Option<ScanQuad>> {
     let rot = Rotation::from_degrees(rotation)?;
-    let gray = luma_plane(luma, width, height, row_stride)?;
+    let bad = |m: &'static str| ApiError::new(ApiErrorKind::InvalidInput, m);
+    if !(16..=MAX_PREVIEW_SIDE).contains(&width) || !(16..=MAX_PREVIEW_SIDE).contains(&height) {
+        return Err(bad("kích thước khung xem trước"));
+    }
+    if !(1..=MAX_PREVIEW_ROW_STEP).contains(&row_step) {
+        return Err(bad("bước hàng khung xem trước"));
+    }
+    let rows = height.div_ceil(row_step);
+    let gray = luma_plane(luma, width, rows, row_stride)?;
+    // Đưa về đúng tỉ lệ khung thật ở kích thước làm việc (co hàng theo bước, co cột theo cạnh dài).
+    let (tw, th) = preview_working_dims(width, height);
+    let small = if (tw, th) == gray.dimensions() {
+        gray
+    } else if tw <= width && th <= rows {
+        imageops::thumbnail(&gray, tw, th)
+    } else {
+        imageops::resize(&gray, tw, th, FilterType::Triangle)
+    };
     let opts = DetectOptions {
         working_size: PREVIEW_WORKING_SIZE,
         ..DetectOptions::default()
     };
-    let Some(d) = detect_luma(&gray, opts)? else {
+    let Some(d) = detect_luma(&small, opts)? else {
         return Ok(None);
     };
-    Ok(Some(normalize(&d.quad, width, height, rot, d.confidence)))
+    Ok(Some(normalize(&d.quad, tw, th, rot, d.confidence)))
 }
 
-/// Chép mặt phẳng Y (có thể có đệm cuối hàng) thành ảnh xám liền.
+/// Chép `height` hàng của mặt phẳng Y (có thể có đệm cuối hàng) thành ảnh xám liền.
 fn luma_plane(mut luma: Vec<u8>, width: u32, height: u32, row_stride: u32) -> ApiResult<GrayImage> {
     let bad = |m: &'static str| ApiError::new(ApiErrorKind::InvalidInput, m);
-    if !(16..=MAX_PREVIEW_SIDE).contains(&width) || !(16..=MAX_PREVIEW_SIDE).contains(&height) {
+    if height == 0 {
         return Err(bad("kích thước khung xem trước"));
     }
     if row_stride < width || row_stride > 4 * MAX_PREVIEW_SIDE {
@@ -201,6 +289,69 @@ impl CapturedImage {
         let found = detect_with(&self.img, DetectOptions::default());
         let (w, h) = (self.img.width(), self.img.height());
         Ok(found?.map(|d| normalize(&d.quad, w, h, Rotation::R0, d.confidence)))
+    }
+
+    /// Đọc mọi QR/mã vạch trên ảnh (chế độ QR, ảnh nhập).
+    #[must_use]
+    pub fn barcodes(&self) -> Vec<ScanBarcode> {
+        barcodes_of(&self.img)
+    }
+
+    /// Chế độ Sách: tìm gáy trong vùng `corners` (rỗng = cả khung) và trả hai tứ giác trang trái, phải (chuẩn hóa
+    /// như [`CapturedImage::detect`]). `None` khi vùng không giống ảnh hai trang (ví dụ chỉ có một trang, hoặc sách
+    /// nằm dọc khung) - khi đó giữ một trang.
+    ///
+    /// Đường gáy tìm trên ảnh đã nắn rồi chiếu ngược qua phép đồng nhất, nên hai tứ giác ghép khít đúng phối cảnh.
+    ///
+    /// # Errors
+    /// `InvalidInput` (góc sai), `UnsupportedImage`.
+    pub fn split_book(&self, corners: Vec<f64>) -> ApiResult<Option<Vec<ScanQuad>>> {
+        let (w, h) = (self.img.width(), self.img.height());
+        let quad = if corners.is_empty() {
+            Quad::full_frame(w, h)
+        } else {
+            quad_from(&corners, w, h)?
+        };
+        let opts = WarpOptions {
+            interpolation: Interpolation::Bilinear,
+            snap_paper: false,
+            max_side: BOOK_GUTTER_SIDE,
+        };
+        let warped = match &self.img {
+            DynamicImage::ImageRgb8(rgb) => tsuscan_imaging::warp::warp_rgb(rgb, &quad, opts),
+            other => tsuscan_imaging::warp(other, &quad, opts),
+        }?
+        .image;
+        let Some(gutter) = tsuscan_imaging::pages::find_gutter(&warped) else {
+            return Ok(None);
+        };
+        let (ww, wh) = (f64::from(warped.width()), f64::from(warped.height()));
+        let rect = [
+            Point::new(0.0, 0.0),
+            Point::new(ww, 0.0),
+            Point::new(ww, wh),
+            Point::new(0.0, wh),
+        ];
+        let to_src = Homography::from_points(&rect, &quad.pts)?;
+        let gx = f64::from(gutter.x);
+        let (Some(top), Some(bottom)) = (
+            to_src.apply(Point::new(gx, 0.0)),
+            to_src.apply(Point::new(gx, wh)),
+        ) else {
+            return Ok(None);
+        };
+        let [tl, tr, br, bl] = quad.pts;
+        let pages = [[tl, top, bottom, bl], [top, tr, br, bottom]].map(|pts| {
+            let (fw, fh) = (f64::from(w), f64::from(h));
+            ScanQuad {
+                corners: pts
+                    .iter()
+                    .flat_map(|p| [(p.x / fw).clamp(0.0, 1.0), (p.y / fh).clamp(0.0, 1.0)])
+                    .collect(),
+                confidence: gutter.confidence,
+            }
+        });
+        Ok(Some(pages.to_vec()))
     }
 
     /// Nắn theo `corners` (8 số chuẩn hóa; rỗng = giữ cả khung) rồi áp bộ lọc; trả JPEG cạnh dài ≤ `max_side`

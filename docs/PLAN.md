@@ -43,7 +43,7 @@ TsuDEV. Chất lượng dò mép, làm phẳng trang, lọc ảnh và OCR tiến
 | P9 | Đồng bộ trong app | Đăng nhập, mật khẩu mã hóa + 24 từ, đồng bộ nền, tải trang theo nhu cầu, quản lý/thu hồi thiết bị, ghim chứng chỉ, liên kết chia sẻ E2EE có hạn (khóa nằm trong `#fragment`) |
 | P10 | Bản máy tính Windows/Linux/macOS | Bố cục desktop (kéo thả, phím tắt, nhiều cột), webcam, thư mục theo dõi, máy scan thật `crates/tsuscan-scanner` (eSCL mọi OS + Android, SANE, WIA 2.0, TWAIN 2.x 64-bit, ICA), CLI `tsuscan ocr/pdf`, menu chuột phải "OCR bằng Tsu Scan" |
 | P11 | Web/PWA + website | Flutter web + lõi Rust WASM tại `/app` (chỉ giữ bản mã trong IndexedDB), trang Astro giới thiệu/tải về/hướng dẫn/riêng tư, thẻ ở `tsudev.com/apps` |
-| P12 | Phát hành + kênh cài | Release ký, SBOM, chứng thực nguồn gốc; APK (reproducible, metadata F-Droid), Setup/MSIX, dmg, deb/rpm/AppImage; Scoop, brew, APT/RPM, PR winget; trình cập nhật kiểm chữ ký (cần 👤 khóa ký Android) |
+| P12 | Phát hành + kênh cài | Release ký, SBOM, chứng thực nguồn gốc; APK (reproducible, metadata F-Droid), Setup/MSIX, dmg, deb/rpm/AppImage; Scoop, brew, APT/RPM, PR winget; trình cập nhật kiểm chữ ký; Release NHÁP + job VirusTotal dùng chung (`tsudev-org/.github` `virustotal.yml`), sạch mới công bố (phiếu AV1) (cần 👤 khóa ký Android) |
 | P13 | Kiểm định bảo mật + 1.0 | Rà soát mô hình đe dọa, OWASP MASVS-L2, fuzz dài, ZAP cho API/web, đối chiếu Luật Bảo vệ dữ liệu cá nhân, Luật An ninh mạng và chính sách Google Play/Microsoft Store/App Store hiện hành; phát hành 1.0.0 |
 | P14 | Kiểm thử thật đầu-cuối (phiên mới) | Agent điều khiển điện thoại qua adb + trình duyệt Edge/Playwright, chạy từng tính năng theo kịch bản `docs/E2E_SCENARIOS.md` (lập ở P13), ghi lỗi, sửa triệt để, lặp tới khi sạch |
 
@@ -67,8 +67,10 @@ Android đi trước vì camera là luồng cốt lõi và phát hành miễn ph
 
 ## Việc cần chủ dự án (không tự làm được)
 
-- Token Cloudflare (Workers, D1, R2, DNS cho `tsuscan.tsudev.com`) đặt ở thư mục NGOÀI repo; báo đường dẫn ở P8;
-  thu hồi sau khi xong.
+- Token Cloudflare (Workers, D1, R2, DNS cho `tsuscan.tsudev.com`, quyền tối thiểu) ở P8: agent nhận qua
+  `tsu-nhan-bi-mat` (chủ dự án chỉ bấm Copy trên trang Cloudflare, KHÔNG dán vào chat/tệp/lệnh `!`), lưu
+  `~/.config/tsudev/tsuscan-cloudflare.env` (chmod 600, ngoài repo) hoặc đẩy thẳng `--stdout | wrangler secret put`;
+  thu hồi sau khi xong (phiếu SEC1).
 - Đăng ký client OIDC `tsuscan` ở tsudev.com, redirect `https://tsuscan.tsudev.com/auth/callback` (P8).
 - Khóa ký Android giữ ngoại tuyến → secret Environment `release` (P12). Duyệt Environment `packages` khi phát hành APT.
 - Duyệt logo riêng (`BRAND_ASSETS.md` mục 15), tạm dùng logo TsuDEV.

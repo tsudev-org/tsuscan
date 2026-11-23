@@ -257,6 +257,22 @@
   "scanModeWhiteboard": "Bảng trắng",
   "scanModePhoto": "Ảnh",
   "scanPermissionDenied": "Tsu Scan chưa được phép dùng camera. Bật quyền Camera cho Tsu Scan trong Cài đặt của máy rồi thử lại, hoặc nhập ảnh có sẵn.",
+  "scanOpenSettings": "Mở Cài đặt",
+  "scanModeBook": "Sách",
+  "scanModeCodes": "QR/mã vạch",
+  "scanHintBook": "Đặt hai trang sách nằm ngang trong khung",
+  "scanHintCodes": "Đưa mã QR hoặc mã vạch vào khung",
+  "scanCodeCopy": "Sao chép",
+  "scanCodeCopied": "Đã sao chép",
+  "scanCodesNone": "Không tìm thấy mã QR hay mã vạch nào.",
+  "scanCodesTitle": "{count, plural, other{Đọc được {count} mã}}",
+  "@scanCodesTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "scanNoCamera": "Không tìm thấy camera trên máy này.",
   "scanCameraError": "Không mở được camera. Đóng các app khác đang dùng camera rồi thử lại.",
   "scanHintFind": "Đưa tài liệu vào khung",

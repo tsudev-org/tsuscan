@@ -8,36 +8,65 @@ import 'error.dart';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `apply`, `from_degrees`, `luma_plane`, `normalize`, `process`, `quad_from`
+// These functions are ignored because they are not marked as `pub`: `apply`, `barcodes_of`, `from_degrees`, `luma_plane`, `normalize`, `preview_working_dims`, `process`, `quad_from`
 // These types are ignored because they are neither used by any `pub` functions nor (for structs and enums) marked `#[frb(unignore)]`: `Rotation`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `clone`, `clone`, `drop`, `eq`, `eq`, `fmt`, `fmt`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `drop`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`
+
+/// Đọc QR/mã vạch trên mặt phẳng Y đầy đủ của một khung xem trước (chế độ QR). Không thấy mã ⇒ danh sách rỗng.
+///
+/// # Errors
+/// `InvalidInput` khi kích thước/stride không hợp lệ hoặc bộ đệm thiếu byte.
+Future<List<ScanBarcode>> scanBarcodesPreview({
+  required List<int> luma,
+  required int width,
+  required int height,
+  required int rowStride,
+}) => RustLib.instance.api.crateApiScanScanBarcodesPreview(
+  luma: luma,
+  width: width,
+  height: height,
+  rowStride: rowStride,
+);
 
 /// Mã các bộ lọc theo thứ tự hiển thị (`original`, `auto`, `color`, `gray`, `bw`, `shadow`, `whiteboard`).
 List<String> scanFilters() => RustLib.instance.api.crateApiScanScanFilters();
 
-/// Dò tài liệu trên mặt phẳng độ sáng (kênh Y của YUV420/NV21) của một khung xem trước.
+/// Bước hàng Dart nên dùng khi gửi khung `width` x `height`: chỉ chép hàng 0, k, 2k... mà ảnh làm việc vẫn đủ hàng.
 ///
-/// `row_stride` là số byte mỗi hàng (≥ `width`, có đệm). `rotation` là số độ (0/90/180/270) phải xoay ảnh cảm biến
-/// theo chiều kim đồng hồ để đúng chiều hiển thị; tọa độ trả về đã xoay theo đó.
+/// Mã cầu sinh ra giải mã `Vec<u8>` từng byte và Dart chép bộ đệm nhiều lần: đo trên Galaxy M32 5G, riêng việc chuyển
+/// trọn mặt phẳng Y 1440x1080 (1,5 MB) đã tốn 15-50 ms/khung. Mép giấy là cạnh bậc nên lấy mẫu hàng không làm mất nó.
+int previewRowStep({required int width, required int height}) =>
+    RustLib.instance.api.crateApiScanPreviewRowStep(width: width, height: height);
+
+/// Dò tài liệu trên mặt phẳng độ sáng (kênh Y của YUV420/NV21) của một khung xem trước `width` x `height`.
+///
+/// `luma` chứa các hàng 0, `row_step`, 2·`row_step`... của khung (xem [`preview_row_step`]; 1 = mọi hàng), hàng thứ i
+/// bắt đầu ở byte `i * row_stride` (≥ `width`, có thể có đệm). `rotation` là số độ (0/90/180/270) phải xoay ảnh cảm
+/// biến theo chiều kim đồng hồ để đúng chiều hiển thị; tọa độ trả về đã xoay theo đó.
 ///
 /// # Errors
-/// `InvalidInput` khi kích thước/stride/góc xoay không hợp lệ hoặc bộ đệm thiếu byte.
+/// `InvalidInput` khi kích thước/stride/bước hàng/góc xoay không hợp lệ hoặc bộ đệm thiếu byte.
 Future<ScanQuad?> detectPreview({
   required List<int> luma,
   required int width,
   required int height,
   required int rowStride,
+  required int rowStep,
   required int rotation,
 }) => RustLib.instance.api.crateApiScanDetectPreview(
   luma: luma,
   width: width,
   height: height,
   rowStride: rowStride,
+  rowStep: rowStep,
   rotation: rotation,
 );
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<CapturedImage>>
 abstract class CapturedImage implements RustOpaqueInterface {
+  /// Đọc mọi QR/mã vạch trên ảnh (chế độ QR, ảnh nhập).
+  Future<List<ScanBarcode>> barcodes();
+
   /// Giải mã ảnh chụp (JPEG/PNG/WebP).
   ///
   /// # Errors
@@ -61,8 +90,37 @@ abstract class CapturedImage implements RustOpaqueInterface {
   /// `InvalidInput` (góc/bộ lọc sai), `UnsupportedImage`.
   Future<Uint8List> render({required List<double> corners, required String filter, required int maxSide});
 
+  /// Chế độ Sách: tìm gáy trong vùng `corners` (rỗng = cả khung) và trả hai tứ giác trang trái, phải (chuẩn hóa
+  /// như [`CapturedImage::detect`]). `None` khi vùng không giống ảnh hai trang (ví dụ chỉ có một trang, hoặc sách
+  /// nằm dọc khung) - khi đó giữ một trang.
+  ///
+  /// Đường gáy tìm trên ảnh đã nắn rồi chiếu ngược qua phép đồng nhất, nên hai tứ giác ghép khít đúng phối cảnh.
+  ///
+  /// # Errors
+  /// `InvalidInput` (góc sai), `UnsupportedImage`.
+  Future<List<ScanQuad>?> splitBook({required List<double> corners});
+
   /// Chiều rộng (px, sau khi xoay EXIF).
   int get width;
+}
+
+/// Một QR/mã vạch đọc được (giải mã hoàn toàn trên máy).
+class ScanBarcode {
+  /// Loại mã (`qrcode`, `ean 13`, `code 128`...).
+  final String format;
+
+  /// Nội dung đã giải mã (dữ liệu không tin cậy: Dart chỉ hiển thị/sao chép, không tự mở).
+  final String text;
+
+  const ScanBarcode({required this.format, required this.text});
+
+  @override
+  int get hashCode => format.hashCode ^ text.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ScanBarcode && runtimeType == other.runtimeType && format == other.format && text == other.text;
 }
 
 /// Tứ giác tài liệu: 8 số chuẩn hóa `[x_tl, y_tl, x_tr, y_tr, x_br, y_br, x_bl, y_bl]` + độ tin cậy 0..1.

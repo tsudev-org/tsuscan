@@ -127,6 +127,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
   @protected
+  List<ScanBarcode> dco_decode_list_scan_barcode(dynamic raw);
+
+  @protected
+  List<ScanQuad> dco_decode_list_scan_quad(dynamic raw);
+
+  @protected
   List<SearchHitDto> dco_decode_list_search_hit_dto(dynamic raw);
 
   @protected
@@ -139,7 +145,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ScanQuad? dco_decode_opt_box_autoadd_scan_quad(dynamic raw);
 
   @protected
+  List<ScanQuad>? dco_decode_opt_list_scan_quad(dynamic raw);
+
+  @protected
   PageDto dco_decode_page_dto(dynamic raw);
+
+  @protected
+  ScanBarcode dco_decode_scan_barcode(dynamic raw);
 
   @protected
   ScanQuad dco_decode_scan_quad(dynamic raw);
@@ -262,6 +274,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
   @protected
+  List<ScanBarcode> sse_decode_list_scan_barcode(SseDeserializer deserializer);
+
+  @protected
+  List<ScanQuad> sse_decode_list_scan_quad(SseDeserializer deserializer);
+
+  @protected
   List<SearchHitDto> sse_decode_list_search_hit_dto(SseDeserializer deserializer);
 
   @protected
@@ -274,7 +292,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ScanQuad? sse_decode_opt_box_autoadd_scan_quad(SseDeserializer deserializer);
 
   @protected
+  List<ScanQuad>? sse_decode_opt_list_scan_quad(SseDeserializer deserializer);
+
+  @protected
   PageDto sse_decode_page_dto(SseDeserializer deserializer);
+
+  @protected
+  ScanBarcode sse_decode_scan_barcode(SseDeserializer deserializer);
 
   @protected
   ScanQuad sse_decode_scan_quad(SseDeserializer deserializer);
@@ -403,6 +427,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_scan_barcode(List<ScanBarcode> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_scan_quad(List<ScanQuad> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_search_hit_dto(List<SearchHitDto> self, SseSerializer serializer);
 
   @protected
@@ -415,7 +445,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_box_autoadd_scan_quad(ScanQuad? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_list_scan_quad(List<ScanQuad>? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_page_dto(PageDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scan_barcode(ScanBarcode self, SseSerializer serializer);
 
   @protected
   void sse_encode_scan_quad(ScanQuad self, SseSerializer serializer);

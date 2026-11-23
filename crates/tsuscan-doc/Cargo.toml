@@ -9,7 +9,7 @@ repository.workspace = true
 publish.workspace = true
 
 [dependencies]
-tsuscan-imaging.workspace = true
+tsuscan-imaging = { workspace = true, features = ["barcode"] }
 tsuscan-ml.workspace = true
 image.workspace = true
 thiserror.workspace = true
@@ -28,8 +28,6 @@ cbc = { version = "0.2.1", features = ["alloc"] }
 sha2 = "0.11.1"
 getrandom = "0.4.3"
 unicode-normalization = "0.1.26"
-# Đọc QR/mã vạch (cổng ZXing, chỉ bộ giải mã).
-rxing = { version = "0.9.4", default-features = false, features = ["decoders", "multi_barcode_readers", "qrcode", "oned", "datamatrix", "pdf417", "aztec", "encoding_rs"] }
 
 [dev-dependencies]
 # Bộ mã hóa chỉ để sinh QR/mã vạch mẫu trong test (app chỉ cần bộ giải mã).

@@ -413,6 +413,36 @@ class AppLocalizationsVi extends AppLocalizations {
       'Tsu Scan chưa được phép dùng camera. Bật quyền Camera cho Tsu Scan trong Cài đặt của máy rồi thử lại, hoặc nhập ảnh có sẵn.';
 
   @override
+  String get scanOpenSettings => 'Mở Cài đặt';
+
+  @override
+  String get scanModeBook => 'Sách';
+
+  @override
+  String get scanModeCodes => 'QR/mã vạch';
+
+  @override
+  String get scanHintBook => 'Đặt hai trang sách nằm ngang trong khung';
+
+  @override
+  String get scanHintCodes => 'Đưa mã QR hoặc mã vạch vào khung';
+
+  @override
+  String get scanCodeCopy => 'Sao chép';
+
+  @override
+  String get scanCodeCopied => 'Đã sao chép';
+
+  @override
+  String get scanCodesNone => 'Không tìm thấy mã QR hay mã vạch nào.';
+
+  @override
+  String scanCodesTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Đọc được $count mã');
+    return '$_temp0';
+  }
+
+  @override
   String get scanNoCamera => 'Không tìm thấy camera trên máy này.';
 
   @override

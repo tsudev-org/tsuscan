@@ -782,6 +782,60 @@ abstract class AppLocalizations {
   /// **'Tsu Scan chưa được phép dùng camera. Bật quyền Camera cho Tsu Scan trong Cài đặt của máy rồi thử lại, hoặc nhập ảnh có sẵn.'**
   String get scanPermissionDenied;
 
+  /// No description provided for @scanOpenSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở Cài đặt'**
+  String get scanOpenSettings;
+
+  /// No description provided for @scanModeBook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sách'**
+  String get scanModeBook;
+
+  /// No description provided for @scanModeCodes.
+  ///
+  /// In vi, this message translates to:
+  /// **'QR/mã vạch'**
+  String get scanModeCodes;
+
+  /// No description provided for @scanHintBook.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt hai trang sách nằm ngang trong khung'**
+  String get scanHintBook;
+
+  /// No description provided for @scanHintCodes.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa mã QR hoặc mã vạch vào khung'**
+  String get scanHintCodes;
+
+  /// No description provided for @scanCodeCopy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép'**
+  String get scanCodeCopy;
+
+  /// No description provided for @scanCodeCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép'**
+  String get scanCodeCopied;
+
+  /// No description provided for @scanCodesNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy mã QR hay mã vạch nào.'**
+  String get scanCodesNone;
+
+  /// No description provided for @scanCodesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{Đọc được {count} mã}}'**
+  String scanCodesTitle(int count);
+
   /// No description provided for @scanNoCamera.
   ///
   /// In vi, this message translates to:

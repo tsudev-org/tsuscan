@@ -6,12 +6,27 @@ import '../../data/scan_engine.dart';
 /// Chế độ quét: quyết định bộ lọc mặc định, có cắt theo mép không, có tự chụp không, số mặt mỗi lần.
 enum ScanMode {
   document(ScanFilter.auto, crop: true, autoCapture: true),
+  book(ScanFilter.auto, crop: true, autoCapture: true, splitBook: true),
   idCard(ScanFilter.color, crop: true, autoCapture: true, sides: 2),
   businessCard(ScanFilter.color, crop: true, autoCapture: true),
   whiteboard(ScanFilter.whiteboard, crop: true, autoCapture: false),
-  photo(ScanFilter.original, crop: false, autoCapture: false);
+  photo(ScanFilter.original, crop: false, autoCapture: false),
+  codes(ScanFilter.original, crop: false, autoCapture: false, readCodes: true);
 
-  const ScanMode(this.filter, {required this.crop, required this.autoCapture, this.sides = 1});
+  const ScanMode(
+    this.filter, {
+    required this.crop,
+    required this.autoCapture,
+    this.sides = 1,
+    this.splitBook = false,
+    this.readCodes = false,
+  });
+
+  /// Sách: tách ảnh hai trang theo gáy thành 2 trang.
+  final bool splitBook;
+
+  /// QR/mã vạch: đọc mã, không lưu trang.
+  final bool readCodes;
 
   /// Bộ lọc mặc định khi chụp ở chế độ này.
   final ScanFilter filter;
@@ -157,28 +172,46 @@ final class ScanSession extends ChangeNotifier {
   int get length => _pages.length;
   bool get isEmpty => _pages.isEmpty;
 
-  /// Giải mã [bytes], dò mép (nếu chế độ cắt), dựng ảnh xem trước rồi thêm vào cuối. [hint] là tứ giác của khung
-  /// xem trước, dùng khi dò trên ảnh đầy đủ không ra.
-  Future<ScanDraftPage> addCapture(Uint8List bytes, {ScanQuad? hint}) async {
-    final page = await prepare(engine, bytes, mode, hint: hint);
+  /// Giải mã [bytes], dò mép (nếu chế độ cắt), dựng ảnh xem trước rồi thêm vào cuối (chế độ Sách: 2 trang khi tìm
+  /// thấy gáy). [hint] là tứ giác của khung xem trước, dùng khi dò trên ảnh đầy đủ không ra.
+  Future<List<ScanDraftPage>> addCapture(Uint8List bytes, {ScanQuad? hint}) async {
+    final pages = await prepare(engine, bytes, mode, hint: hint);
     if (_disposed) {
-      _wipe(page);
+      pages.forEach(_wipe);
       throw StateError('phiên quét đã đóng');
     }
-    _pages.add(page);
+    _pages.addAll(pages);
     notifyListeners();
-    return page;
+    return pages;
   }
 
-  static Future<ScanDraftPage> prepare(ScanEngine engine, Uint8List bytes, ScanMode mode, {ScanQuad? hint}) async {
+  static Future<List<ScanDraftPage>> prepare(
+    ScanEngine engine,
+    Uint8List bytes,
+    ScanMode mode, {
+    ScanQuad? hint,
+  }) async {
     final cap = await engine.open(bytes);
     try {
       ScanQuad? quad;
       if (mode.crop && engine.supportsDetection) {
         quad = await cap.detect() ?? (hint != null && hint.isConvex ? hint : null);
       }
+      final halves = mode.splitBook ? await cap.splitBook(quad) : null;
+      if (halves != null && halves.length == 2) {
+        // Mỗi trang giữ bản sao JPEG gốc riêng: xóa/sửa một trang xóa trắng bộ đệm của nó, không đụng trang kia.
+        return [
+          for (final (i, q) in halves.indexed)
+            ScanDraftPage(
+              original: i == 0 ? bytes : Uint8List.fromList(bytes),
+              quad: q,
+              filter: mode.filter,
+              thumb: await cap.render(q, mode.filter, kThumbSide),
+            ),
+        ];
+      }
       final thumb = await cap.render(quad, mode.filter, kThumbSide);
-      return ScanDraftPage(original: bytes, quad: quad, filter: mode.filter, thumb: thumb);
+      return [ScanDraftPage(original: bytes, quad: quad, filter: mode.filter, thumb: thumb)];
     } finally {
       cap.dispose();
     }

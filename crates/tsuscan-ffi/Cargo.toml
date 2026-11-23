@@ -15,7 +15,9 @@ crate-type = ["cdylib", "staticlib", "rlib"]
 [dependencies]
 # Phiên bản PHẢI khớp `flutter_rust_bridge` trong apps/app/pubspec.yaml và codegen (`scripts/gen-bridge.sh`).
 flutter_rust_bridge = "=2.13.0"
-tsuscan-imaging.workspace = true
+# `barcode`: chế độ QR (rxing, chỉ bộ giải mã). KHÔNG phụ thuộc tsuscan-ml/tsuscan-doc ở đây: LTO không loại được
+# tract khỏi `.so` (đo 19/11/2026: 3,9 → 17,7 MB arm64) - gáy sách và mã vạch là thuật toán cổ điển trong imaging.
+tsuscan-imaging = { workspace = true, features = ["barcode"] }
 tsuscan-vault.workspace = true
 image.workspace = true
 argon2 = "0.6.0"
@@ -44,3 +46,5 @@ needless_pass_by_value = "allow"
 [dev-dependencies]
 # Ảnh cảnh có nhãn (P1) để kiểm dò mép/nắn qua đúng bề mặt API.
 tsuscan-imaging = { workspace = true, features = ["synth"] }
+# Bộ mã hóa chỉ để sinh QR mẫu trong test (app chỉ có bộ giải mã).
+rxing = { version = "0.9.4", default-features = false, features = ["encoders", "decoders", "qrcode"] }

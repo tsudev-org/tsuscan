@@ -424,6 +424,36 @@ class AppLocalizationsEn extends AppLocalizations {
       'Tsu Scan is not allowed to use the camera. Turn on the Camera permission for Tsu Scan in your device settings and try again, or import existing photos.';
 
   @override
+  String get scanOpenSettings => 'Open settings';
+
+  @override
+  String get scanModeBook => 'Book';
+
+  @override
+  String get scanModeCodes => 'QR/barcode';
+
+  @override
+  String get scanHintBook => 'Place both book pages side by side in the frame';
+
+  @override
+  String get scanHintCodes => 'Point at a QR code or barcode';
+
+  @override
+  String get scanCodeCopy => 'Copy';
+
+  @override
+  String get scanCodeCopied => 'Copied';
+
+  @override
+  String get scanCodesNone => 'No QR code or barcode found.';
+
+  @override
+  String scanCodesTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count codes found', one: '1 code found');
+    return '$_temp0';
+  }
+
+  @override
   String get scanNoCamera => 'No camera found on this device.';
 
   @override

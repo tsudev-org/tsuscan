@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use image::{DynamicImage, ImageFormat};
 use tsuscan_ffi::api::error::{ApiErrorKind, ApiResult};
 use tsuscan_ffi::api::library::{LibraryHandle, generate_db_key};
-use tsuscan_ffi::api::scan::{CapturedImage, ScanQuad, detect_preview, scan_filters};
+use tsuscan_ffi::api::scan::{CapturedImage, ScanQuad, detect_preview, preview_row_step, scan_filters};
 use tsuscan_imaging::synth::{SynthConfig, generate};
 
 struct TempDir(PathBuf);
@@ -79,7 +79,7 @@ fn khung_xem_truoc_co_stride_va_xoay_90() -> ApiResult<()> {
                 buf[y * stride as usize + x] = px.0[0];
             }
         }
-        let Some(q) = detect_preview(buf, w, h, stride, 90)? else {
+        let Some(q) = detect_preview(buf, w, h, stride, 1, 90)? else {
             continue;
         };
         // Góc thật xoay 90° thuận chiều kim đồng hồ: (x, y) → (1 - y, x), rồi TL của ảnh xoay là BL cũ.
@@ -95,14 +95,63 @@ fn khung_xem_truoc_co_stride_va_xoay_90() -> ApiResult<()> {
 }
 
 #[test]
+fn buoc_hang_giu_du_hang_cho_anh_lam_viec() {
+    // Khung phân tích CameraX 1440x1080 (đo trên Galaxy M32 5G) ⇒ ảnh làm việc 320x240, mỗi 4 hàng lấy 1.
+    assert_eq!(preview_row_step(1440, 1080), 4);
+    assert_eq!(preview_row_step(1080, 1440), 4);
+    assert_eq!(preview_row_step(1920, 1080), 6);
+    assert_eq!(preview_row_step(320, 240), 1);
+    assert_eq!(preview_row_step(16, 4096), 12);
+}
+
+#[test]
+fn khung_xem_truoc_gom_hang_van_khop_goc() -> ApiResult<()> {
+    let mut hits = 0;
+    for seed in 0..10u64 {
+        let (img, want) = truth(seed);
+        let gray = DynamicImage::ImageRgb8(img).to_luma8();
+        let (w, h) = gray.dimensions();
+        let step = preview_row_step(w, h);
+        assert!(step > 1, "{w}x{h}");
+        // Như Dart: chỉ chép hàng 0, step, 2·step... (có đệm cuối hàng, hàng cuối không đệm).
+        let stride = w + 8;
+        let rows = h.div_ceil(step);
+        let mut buf = vec![0u8; (stride * (rows - 1) + w) as usize];
+        for r in 0..rows {
+            for x in 0..w {
+                buf[(r * stride + x) as usize] = gray.get_pixel(x, r * step).0[0];
+            }
+        }
+        let Some(q) = detect_preview(buf, w, h, stride, step, 0)? else {
+            continue;
+        };
+        if max_err(&q.corners, &want) < 0.03 {
+            hits += 1;
+        }
+    }
+    assert!(hits >= 9, "chỉ {hits}/10 khung khớp góc thật");
+    Ok(())
+}
+
+#[test]
 fn khung_xem_truoc_sai_kich_thuoc_bi_tu_choi() {
-    let e = detect_preview(vec![0; 100], 640, 480, 640, 0);
+    for step in [0, 17] {
+        let e = detect_preview(vec![0; 640 * 480], 640, 480, 640, step, 0);
+        assert!(
+            matches!(e, Err(e) if e.kind == ApiErrorKind::InvalidInput),
+            "bước {step}"
+        );
+    }
+    // Khai bước 4 nhưng gửi thiếu hàng.
+    let e = detect_preview(vec![0; 640 * 100], 640, 480, 640, 4, 0);
     assert!(matches!(e, Err(e) if e.kind == ApiErrorKind::InvalidInput));
-    let e = detect_preview(vec![0; 640 * 480], 640, 480, 640, 45);
+    let e = detect_preview(vec![0; 100], 640, 480, 640, 1, 0);
+    assert!(matches!(e, Err(e) if e.kind == ApiErrorKind::InvalidInput));
+    let e = detect_preview(vec![0; 640 * 480], 640, 480, 640, 1, 45);
     assert!(matches!(e, Err(e) if e.kind == ApiErrorKind::InvalidInput));
     // Khung trơn: không có tài liệu, không lỗi.
     assert!(matches!(
-        detect_preview(vec![128; 640 * 480], 640, 480, 640, 0),
+        detect_preview(vec![128; 640 * 480], 640, 480, 640, 1, 0),
         Ok(None)
     ));
 }

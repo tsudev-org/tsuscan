@@ -1,4 +1,4 @@
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 
 import '../bridge/generated/api/scan.dart' as ffi;
 
@@ -68,6 +68,20 @@ final class ScanQuad {
   }
 }
 
+/// Một QR/mã vạch đọc được. [text] là dữ liệu KHÔNG tin cậy: chỉ hiển thị dạng chữ thuần và sao chép, không tự mở
+/// liên kết hay thực thi gì.
+final class ScannedCode {
+  const ScannedCode(this.format, this.text);
+  final String format;
+  final String text;
+
+  @override
+  bool operator ==(Object other) => other is ScannedCode && other.format == format && other.text == text;
+
+  @override
+  int get hashCode => Object.hash(format, text);
+}
+
 /// Ảnh vừa chụp, đã giải mã trong lõi. Gọi [dispose] ngay khi xong: bộ đệm điểm ảnh bị xóa trắng.
 abstract interface class ScanCapture {
   int get width;
@@ -75,6 +89,13 @@ abstract interface class ScanCapture {
 
   /// Dò tài liệu trên ảnh đầy đủ; `null` khi không thấy.
   Future<ScanQuad?> detect();
+
+  /// Chế độ Sách: tìm gáy trong vùng [quad] (`null` = cả khung), trả 2 tứ giác trang trái, phải; `null` khi không
+  /// giống ảnh hai trang.
+  Future<List<ScanQuad>?> splitBook(ScanQuad? quad);
+
+  /// Đọc QR/mã vạch trên cả ảnh.
+  Future<List<ScannedCode>> readCodes();
 
   /// Nắn theo [quad] (`null` = giữ cả khung) + lọc; JPEG cạnh dài ≤ [maxSide] để xem trước.
   Future<Uint8List> render(ScanQuad? quad, ScanFilter filter, int maxSide);
@@ -92,7 +113,12 @@ abstract interface class ScanEngine {
 
   /// Dò trên kênh Y của một khung xem trước. [rotation]: độ xoay cảm biến → hiển thị (0/90/180/270).
   Future<ScanQuad?> detectPreview(Uint8List luma, int width, int height, int rowStride, int rotation);
+
+  /// Đọc QR/mã vạch trên kênh Y đầy đủ của một khung xem trước (chế độ QR).
+  Future<List<ScannedCode>> readCodesPreview(Uint8List luma, int width, int height, int rowStride);
 }
+
+List<ScannedCode> _codes(List<ffi.ScanBarcode> raw) => [for (final b in raw) ScannedCode(b.format, b.text)];
 
 /// Bản thật qua lõi Rust.
 final class RustScanEngine implements ScanEngine {
@@ -106,15 +132,39 @@ final class RustScanEngine implements ScanEngine {
 
   @override
   Future<ScanQuad?> detectPreview(Uint8List luma, int width, int height, int rowStride, int rotation) async {
+    // Chỉ gửi mỗi hàng thứ `step` qua cầu (xem `preview_row_step` bên Rust): chuyển trọn 1,5 MB mỗi khung tốn
+    // 15-50 ms trên máy tầm trung, gom hàng bằng chép khối gần như miễn phí.
+    final step = ffi.previewRowStep(width: width, height: height);
+    final packed = packLumaRows(luma, width, height, rowStride, step);
     final q = await ffi.detectPreview(
-      luma: luma,
+      luma: packed,
       width: width,
       height: height,
-      rowStride: rowStride,
+      rowStride: width,
+      rowStep: step,
       rotation: rotation,
     );
     return q == null ? null : ScanQuad(q.corners, q.confidence);
   }
+
+  @override
+  Future<List<ScannedCode>> readCodesPreview(Uint8List luma, int width, int height, int rowStride) async =>
+      _codes(await ffi.scanBarcodesPreview(luma: luma, width: width, height: height, rowStride: rowStride));
+}
+
+/// Chép các hàng 0, [step], 2·[step]... của mặt phẳng [luma] (mỗi hàng bắt đầu ở `i * rowStride`, có thể có đệm;
+/// hàng cuối có thể thiếu phần đệm) thành bộ đệm liền `width` byte mỗi hàng. Hàng thiếu byte (khung hỏng) dừng sớm:
+/// lõi Rust sẽ từ chối vì thiếu hàng.
+@visibleForTesting
+Uint8List packLumaRows(Uint8List luma, int width, int height, int rowStride, int step) {
+  final rows = (height + step - 1) ~/ step;
+  final out = Uint8List(rows * width);
+  for (var r = 0; r < rows; r++) {
+    final src = r * step * rowStride;
+    if (src + width > luma.length) return Uint8List.sublistView(out, 0, r * width);
+    out.setRange(r * width, (r + 1) * width, luma, src);
+  }
+  return out;
 }
 
 /// Ảnh chụp giữ trong Rust (opaque).
@@ -132,6 +182,15 @@ final class RustScanCapture implements ScanCapture {
     final q = await inner.detect();
     return q == null ? null : ScanQuad(q.corners, q.confidence);
   }
+
+  @override
+  Future<List<ScanQuad>?> splitBook(ScanQuad? quad) async {
+    final r = await inner.splitBook(corners: quad?.corners ?? const []);
+    return r?.map((q) => ScanQuad(q.corners, q.confidence)).toList();
+  }
+
+  @override
+  Future<List<ScannedCode>> readCodes() async => _codes(await inner.barcodes());
 
   @override
   Future<Uint8List> render(ScanQuad? quad, ScanFilter filter, int maxSide) =>
@@ -155,6 +214,9 @@ final class MemoryScanEngine implements ScanEngine {
 
   @override
   Future<ScanQuad?> detectPreview(Uint8List luma, int width, int height, int rowStride, int rotation) async => null;
+
+  @override
+  Future<List<ScannedCode>> readCodesPreview(Uint8List luma, int width, int height, int rowStride) async => const [];
 }
 
 final class MemoryScanCapture implements ScanCapture {
@@ -167,6 +229,10 @@ final class MemoryScanCapture implements ScanCapture {
   int get height => 0;
   @override
   Future<ScanQuad?> detect() async => null;
+  @override
+  Future<List<ScanQuad>?> splitBook(ScanQuad? quad) async => null;
+  @override
+  Future<List<ScannedCode>> readCodes() async => const [];
   @override
   Future<Uint8List> render(ScanQuad? quad, ScanFilter filter, int maxSide) async => Uint8List.fromList(bytes);
   @override

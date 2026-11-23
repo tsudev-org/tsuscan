@@ -26,6 +26,21 @@ ScanQuad _rect(double x0, double y0, double x1, double y1, [double conf = 0.9]) 
     ScanQuad([x0, y0, x1, y0, x1, y1, x0, y1], conf);
 
 void main() {
+  test('packLumaRows lấy hàng 0, k, 2k..., bỏ đệm, hàng cuối không đệm', () {
+    // Khung 4x7, stride 6 (2 byte đệm), hàng cuối chỉ có 4 byte; giá trị = 10 * hàng + cột.
+    const w = 4, h = 7, stride = 6;
+    final luma = Uint8List(stride * (h - 1) + w);
+    for (var y = 0; y < h; y++) {
+      for (var x = 0; x < w; x++) {
+        luma[y * stride + x] = 10 * y + x;
+      }
+    }
+    expect(packLumaRows(luma, w, h, stride, 3), [0, 1, 2, 3, 30, 31, 32, 33, 60, 61, 62, 63]);
+    expect(packLumaRows(luma, w, h, stride, 1).length, w * h);
+    // Bộ đệm hỏng (thiếu byte): dừng ở hàng cuối còn đủ, không đọc tràn.
+    expect(packLumaRows(Uint8List.sublistView(luma, 0, 20), w, h, stride, 3), [0, 1, 2, 3]);
+  });
+
   test('mã bộ lọc Dart trùng tsuscan_imaging::Filter::code (cùng thứ tự)', () {
     final src = File('../../crates/tsuscan-imaging/src/filters.rs').readAsStringSync();
     final body = RegExp(r'pub fn code\(self\)[^{]*\{(.*?)\n    \}', dotAll: true).firstMatch(src)!.group(1)!;
@@ -115,6 +130,27 @@ void main() {
       expect(ScanMode.whiteboard.filter, ScanFilter.whiteboard);
       expect(ScanMode.idCard.sides, 2);
       expect(ScanMode.parse('khong-co'), ScanMode.document);
+      expect(ScanMode.parse('book').splitBook, isTrue);
+      expect(ScanMode.codes.readCodes && !ScanMode.codes.crop && !ScanMode.codes.autoCapture, isTrue);
+    });
+
+    test('Sách: gáy tìm thấy ⇒ 2 trang, mỗi trang giữ bản sao ảnh gốc riêng', () async {
+      final left = ScanQuad(const [0, 0, 0.5, 0, 0.5, 1, 0, 1], 0.8);
+      final right = ScanQuad(const [0.5, 0, 1, 0, 1, 1, 0.5, 1], 0.8);
+      final s = ScanSession(_BookEngine([left, right]), ScanMode.book);
+      final bytes = Uint8List.fromList(_png);
+      final added = await s.addCapture(bytes);
+      expect(added.length, 2);
+      expect(s.pages.map((p) => p.quad), [left, right]);
+      expect(identical(s.pages[0].original, s.pages[1].original), isFalse);
+      s.remove(0);
+      expect(s.pages.single.original, _png, reason: 'xóa trang trái không được xóa trắng ảnh của trang phải');
+      s.dispose();
+
+      // Không tìm thấy gáy ⇒ một trang như chế độ Tài liệu.
+      final one = ScanSession(_BookEngine(null), ScanMode.book);
+      expect((await one.addCapture(Uint8List.fromList(_png))).length, 1);
+      one.dispose();
     });
   });
 
@@ -125,12 +161,17 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Quét').last);
     await tester.pumpAndSettle();
-    expect(find.text('Chụp bằng camera'), findsOneWidget);
-    expect(find.text('Nhập ảnh có sẵn'), findsOneWidget);
     await tester.tap(find.widgetWithText(ChoiceChip, 'CCCD 2 mặt'));
     await tester.pumpAndSettle();
     final chip = tester.widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'CCCD 2 mặt'));
     expect(chip.selected, isTrue);
+    expect(settings.scanMode, 'idCard', reason: 'nhớ chế độ cho lần quét sau');
+    expect(find.widgetWithText(ChoiceChip, 'Sách'), findsOneWidget);
+    expect(find.widgetWithText(ChoiceChip, 'QR/mã vạch'), findsOneWidget);
+    final scroll = find.byType(Scrollable).last;
+    await tester.scrollUntilVisible(find.text('Nhập ảnh có sẵn'), 100, scrollable: scroll);
+    expect(find.text('Chụp bằng camera'), findsOneWidget);
+    expect(find.text('Nhập ảnh có sẵn'), findsOneWidget);
   });
 
   testWidgets('duyệt: xóa một trang rồi lưu thành tài liệu có đúng số trang', (tester) async {
@@ -206,4 +247,42 @@ void main() {
     session.dispose();
     changes.dispose();
   });
+}
+
+/// Lõi giả cho chế độ Sách: dò được cả khung, tách theo [halves].
+final class _BookEngine implements ScanEngine {
+  const _BookEngine(this.halves);
+  final List<ScanQuad>? halves;
+
+  @override
+  bool get supportsDetection => true;
+
+  @override
+  Future<ScanCapture> open(Uint8List bytes) async => _BookCapture(halves);
+
+  @override
+  Future<ScanQuad?> detectPreview(Uint8List luma, int width, int height, int rowStride, int rotation) async => null;
+
+  @override
+  Future<List<ScannedCode>> readCodesPreview(Uint8List luma, int width, int height, int rowStride) async => const [];
+}
+
+final class _BookCapture implements ScanCapture {
+  _BookCapture(this.halves);
+  final List<ScanQuad>? halves;
+
+  @override
+  int get width => 100;
+  @override
+  int get height => 50;
+  @override
+  Future<ScanQuad?> detect() async => ScanQuad.full;
+  @override
+  Future<List<ScanQuad>?> splitBook(ScanQuad? quad) async => halves;
+  @override
+  Future<List<ScannedCode>> readCodes() async => const [];
+  @override
+  Future<Uint8List> render(ScanQuad? quad, ScanFilter filter, int maxSide) async => Uint8List.fromList(_png);
+  @override
+  void dispose() {}
 }
