@@ -21,3 +21,7 @@ crates/tsuscan-ml/src/lib.rs | agent-scan P6 chạy thật + Sách/QR | 21:33 19
 crates/tsuscan-ml/Cargo.toml | agent-scan P6 chạy thật + Sách/QR | 21:33 19/11/2026
 crates/tsuscan-doc/src/lib.rs | agent-scan P6 chạy thật + Sách/QR | 21:33 19/11/2026
 crates/tsuscan-doc/Cargo.toml | agent-scan P6 chạy thật + Sách/QR | 21:33 19/11/2026
+crates/tsuscan-vault/ | agent-scan P7a tổ chức trang + thùng rác | 03:53 24/11/2026
+apps/app/lib/src/features/library/ | agent-scan P7a tổ chức trang + thùng rác | 03:53 24/11/2026
+apps/app/lib/src/data/library_repository.dart | agent-scan P7a tổ chức trang + thùng rác | 03:53 24/11/2026
+apps/app/lib/src/data/memory_library.dart | agent-scan P7a tổ chức trang + thùng rác | 03:53 24/11/2026

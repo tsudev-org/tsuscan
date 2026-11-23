@@ -138,6 +138,52 @@ fn nhap_anh_luu_jpeg_va_tra_anh_thu_nho() -> ApiResult<()> {
     Ok(())
 }
 
+#[test]
+fn xoay_sap_xep_chuyen_trang_va_thung_rac() -> ApiResult<()> {
+    let dir = TempDir::new("organize");
+    let lib = LibraryHandle::create(dir.path(), generate_db_key()?)?;
+    let a = lib.create_document("A".into(), None)?;
+    let b = lib.create_document("B".into(), None)?;
+    let p1 = lib.import_image_page(a.clone(), png(300, 200))?;
+    let p2 = lib.import_image_page(a.clone(), png(120, 80))?;
+
+    lib.rotate_page(p1.clone(), 1)?;
+    let full = image::load_from_memory(&lib.page_image(p1.clone())?).map_err(|_| unreachable_err())?;
+    assert_eq!((full.width(), full.height()), (200, 300));
+    assert_eq!(
+        (
+            lib.list_pages(a.clone())?[0].width,
+            lib.list_pages(a.clone())?[0].height
+        ),
+        (200, 300)
+    );
+    lib.rotate_page(p1.clone(), -1)?;
+    assert_eq!(lib.list_pages(a.clone())?[0].width, 300, "xoay trái = xoay -1");
+    lib.rotate_page(p1.clone(), 4)?;
+    assert_eq!(lib.list_pages(a.clone())?[0].width, 300);
+
+    lib.reorder_pages(a.clone(), vec![p2.clone(), p1.clone()])?;
+    assert_eq!(lib.list_pages(a.clone())?[0].id, p2);
+    lib.move_pages(vec![p1.clone()], b.clone(), None)?;
+    assert_eq!(lib.document(b.clone())?.page_count, 1);
+    assert!(lib.page_image(p1).is_ok(), "đọc được bằng khóa tài liệu đích");
+
+    lib.trash_document(a.clone())?;
+    assert_eq!(lib.list_documents(None, false, None, 10, 0)?.total, 1);
+    let trash = lib.list_trash()?;
+    assert_eq!(trash.len(), 1);
+    assert_eq!(
+        trash[0].purge_at_ms - trash[0].trashed_ms,
+        30 * 24 * 60 * 60 * 1000
+    );
+    assert_eq!(lib.purge_trash(true)?, 0, "chưa quá 30 ngày");
+    lib.restore_document(a.clone())?;
+    lib.trash_document(a)?;
+    assert_eq!(lib.purge_trash(false)?, 1);
+    assert_eq!(lib.list_trash()?.len(), 0);
+    Ok(())
+}
+
 fn unreachable_err() -> tsuscan_ffi::api::error::ApiError {
     tsuscan_ffi::api::error::ApiError {
         kind: ApiErrorKind::Internal,

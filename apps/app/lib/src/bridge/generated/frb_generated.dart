@@ -70,7 +70,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.13.0';
 
   @override
-  int get rustContentHash => -616980322;
+  int get rustContentHash => 962017871;
 
   static const kDefaultExternalLibraryLoaderConfig = ExternalLibraryLoaderConfig(
     stem: 'tsuscan_ffi',
@@ -166,10 +166,19 @@ abstract class RustLibApi extends BaseApi {
 
   Future<List<TagDto>> crateApiLibraryLibraryHandleListTags({required LibraryHandle that});
 
+  Future<List<TrashedDocumentDto>> crateApiLibraryLibraryHandleListTrash({required LibraryHandle that});
+
   Future<void> crateApiLibraryLibraryHandleMoveDocument({
     required LibraryHandle that,
     required String id,
     String? folderId,
+  });
+
+  Future<void> crateApiLibraryLibraryHandleMovePages({
+    required LibraryHandle that,
+    required List<String> pageIds,
+    required String targetDocumentId,
+    int? at,
   });
 
   Future<LibraryHandle> crateApiLibraryLibraryHandleOpen({required String root, required List<int> dbKey});
@@ -182,6 +191,10 @@ abstract class RustLibApi extends BaseApi {
     required int maxSide,
   });
 
+  Future<void> crateApiLibraryLibraryHandlePurgeDocument({required LibraryHandle that, required String id});
+
+  Future<int> crateApiLibraryLibraryHandlePurgeTrash({required LibraryHandle that, required bool expiredOnly});
+
   Future<void> crateApiLibraryLibraryHandleRenameDocument({
     required LibraryHandle that,
     required String id,
@@ -192,6 +205,20 @@ abstract class RustLibApi extends BaseApi {
     required LibraryHandle that,
     required String id,
     required String name,
+  });
+
+  Future<void> crateApiLibraryLibraryHandleReorderPages({
+    required LibraryHandle that,
+    required String documentId,
+    required List<String> order,
+  });
+
+  Future<void> crateApiLibraryLibraryHandleRestoreDocument({required LibraryHandle that, required String id});
+
+  Future<void> crateApiLibraryLibraryHandleRotatePage({
+    required LibraryHandle that,
+    required String pageId,
+    required int quarterTurns,
   });
 
   Future<List<SearchHitDto>> crateApiLibraryLibraryHandleSearch({
@@ -206,6 +233,8 @@ abstract class RustLibApi extends BaseApi {
     required String tagId,
     required bool on_,
   });
+
+  Future<void> crateApiLibraryLibraryHandleTrashDocument({required LibraryHandle that, required String id});
 
   String crateApiCoreVersion();
 
@@ -872,6 +901,29 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "LibraryHandle_list_tags", argNames: ["that"]);
 
   @override
+  Future<List<TrashedDocumentDto>> crateApiLibraryLibraryHandleListTrash({required LibraryHandle that}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_list_trashed_document_dto, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleListTrashConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleListTrashConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_list_trash", argNames: ["that"]);
+
+  @override
   Future<void> crateApiLibraryLibraryHandleMoveDocument({
     required LibraryHandle that,
     required String id,
@@ -887,7 +939,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(id, serializer);
           sse_encode_opt_String(folderId, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandleMoveDocumentConstMeta,
@@ -901,6 +953,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "LibraryHandle_move_document", argNames: ["that", "id", "folderId"]);
 
   @override
+  Future<void> crateApiLibraryLibraryHandleMovePages({
+    required LibraryHandle that,
+    required List<String> pageIds,
+    required String targetDocumentId,
+    int? at,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_list_String(pageIds, serializer);
+          sse_encode_String(targetDocumentId, serializer);
+          sse_encode_opt_box_autoadd_u_32(at, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleMovePagesConstMeta,
+        argValues: [that, pageIds, targetDocumentId, at],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleMovePagesConstMeta => const TaskConstMeta(
+    debugName: "LibraryHandle_move_pages",
+    argNames: ["that", "pageIds", "targetDocumentId", "at"],
+  );
+
+  @override
   Future<LibraryHandle> crateApiLibraryLibraryHandleOpen({required String root, required List<int> dbKey}) {
     return handler.executeNormal(
       NormalTask(
@@ -908,7 +993,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(root, serializer);
           sse_encode_list_prim_u_8_loose(dbKey, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27, port: port_);
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -936,7 +1021,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(pageId, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_prim_u_8_strict, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandlePageImageConstMeta,
@@ -965,7 +1050,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(pageId, serializer);
           sse_encode_u_32(maxSide, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_prim_u_8_strict, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandlePageThumbnailConstMeta,
@@ -977,6 +1062,54 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiLibraryLibraryHandlePageThumbnailConstMeta =>
       const TaskConstMeta(debugName: "LibraryHandle_page_thumbnail", argNames: ["that", "pageId", "maxSide"]);
+
+  @override
+  Future<void> crateApiLibraryLibraryHandlePurgeDocument({required LibraryHandle that, required String id}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandlePurgeDocumentConstMeta,
+        argValues: [that, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandlePurgeDocumentConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_purge_document", argNames: ["that", "id"]);
+
+  @override
+  Future<int> crateApiLibraryLibraryHandlePurgeTrash({required LibraryHandle that, required bool expiredOnly}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_bool(expiredOnly, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_u_32, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandlePurgeTrashConstMeta,
+        argValues: [that, expiredOnly],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandlePurgeTrashConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_purge_trash", argNames: ["that", "expiredOnly"]);
 
   @override
   Future<void> crateApiLibraryLibraryHandleRenameDocument({
@@ -994,7 +1127,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(id, serializer);
           sse_encode_String(title, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandleRenameDocumentConstMeta,
@@ -1023,7 +1156,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(id, serializer);
           sse_encode_String(name, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandleRenameFolderConstMeta,
@@ -1035,6 +1168,88 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiLibraryLibraryHandleRenameFolderConstMeta =>
       const TaskConstMeta(debugName: "LibraryHandle_rename_folder", argNames: ["that", "id", "name"]);
+
+  @override
+  Future<void> crateApiLibraryLibraryHandleReorderPages({
+    required LibraryHandle that,
+    required String documentId,
+    required List<String> order,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(documentId, serializer);
+          sse_encode_list_String(order, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleReorderPagesConstMeta,
+        argValues: [that, documentId, order],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleReorderPagesConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_reorder_pages", argNames: ["that", "documentId", "order"]);
+
+  @override
+  Future<void> crateApiLibraryLibraryHandleRestoreDocument({required LibraryHandle that, required String id}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleRestoreDocumentConstMeta,
+        argValues: [that, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleRestoreDocumentConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_restore_document", argNames: ["that", "id"]);
+
+  @override
+  Future<void> crateApiLibraryLibraryHandleRotatePage({
+    required LibraryHandle that,
+    required String pageId,
+    required int quarterTurns,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(pageId, serializer);
+          sse_encode_i_32(quarterTurns, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleRotatePageConstMeta,
+        argValues: [that, pageId, quarterTurns],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleRotatePageConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_rotate_page", argNames: ["that", "pageId", "quarterTurns"]);
 
   @override
   Future<List<SearchHitDto>> crateApiLibraryLibraryHandleSearch({
@@ -1052,7 +1267,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(query, serializer);
           sse_encode_u_32(limit, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_search_hit_dto, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandleSearchConstMeta,
@@ -1083,7 +1298,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(documentId, serializer);
           sse_encode_String(tagId, serializer);
           sse_encode_bool(on_, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryLibraryHandleSetTagConstMeta,
@@ -1097,12 +1312,36 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "LibraryHandle_set_tag", argNames: ["that", "documentId", "tagId", "on_"]);
 
   @override
+  Future<void> crateApiLibraryLibraryHandleTrashDocument({required LibraryHandle that, required String id}) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+            that,
+            serializer,
+          );
+          sse_encode_String(id, serializer);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39, port: port_);
+        },
+        codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: sse_decode_api_error),
+        constMeta: kCrateApiLibraryLibraryHandleTrashDocumentConstMeta,
+        argValues: [that, id],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiLibraryLibraryHandleTrashDocumentConstMeta =>
+      const TaskConstMeta(debugName: "LibraryHandle_trash_document", argNames: ["that", "id"]);
+
+  @override
   String crateApiCoreVersion() {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 40)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_String, decodeErrorData: null),
         constMeta: kCrateApiCoreVersionConstMeta,
@@ -1133,7 +1372,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_u_32(rowStride, serializer);
           sse_encode_u_32(rowStep, serializer);
           sse_encode_u_32(rotation, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 41, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_opt_box_autoadd_scan_quad, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiScanDetectPreviewConstMeta,
@@ -1154,7 +1393,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 42, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_prim_u_8_strict, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiLibraryGenerateDbKeyConstMeta,
@@ -1173,7 +1412,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 43, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_unit, decodeErrorData: null),
         constMeta: kCrateApiInitAppConstMeta,
@@ -1192,7 +1431,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(root, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 44)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_bool, decodeErrorData: null),
         constMeta: kCrateApiLibraryLibraryExistsConstMeta,
@@ -1212,7 +1451,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(pin, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 45, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_String, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiPinPinCreateVerifierConstMeta,
@@ -1232,7 +1471,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_u_32(failures, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 46)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_u_32, decodeErrorData: null),
         constMeta: kCrateApiPinPinLockoutSecondsConstMeta,
@@ -1253,7 +1492,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(pin, serializer);
           sse_encode_String(verifier, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 47, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_bool, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiPinPinVerifyConstMeta,
@@ -1274,7 +1513,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_u_32(width, serializer);
           sse_encode_u_32(height, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 40)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 48)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_u_32, decodeErrorData: null),
         constMeta: kCrateApiScanPreviewRowStepConstMeta,
@@ -1302,7 +1541,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_u_32(width, serializer);
           sse_encode_u_32(height, serializer);
           sse_encode_u_32(rowStride, serializer);
-          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 41, port: port_);
+          pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 49, port: port_);
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_scan_barcode, decodeErrorData: sse_decode_api_error),
         constMeta: kCrateApiScanScanBarcodesPreviewConstMeta,
@@ -1321,7 +1560,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 42)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 50)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_String, decodeErrorData: null),
         constMeta: kCrateApiScanScanFiltersConstMeta,
@@ -1341,7 +1580,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(text, serializer);
           sse_encode_String(query, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 43)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 51)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_list_highlight_range, decodeErrorData: null),
         constMeta: kCrateApiTextViHighlightConstMeta,
@@ -1361,7 +1600,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(input, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 44)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 52)!;
         },
         codec: SseCodec(decodeSuccessData: sse_decode_String, decodeErrorData: null),
         constMeta: kCrateApiTextViNormalizeTextConstMeta,
@@ -1460,6 +1699,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ScanQuad dco_decode_box_autoadd_scan_quad(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_scan_quad(raw);
+  }
+
+  @protected
+  int dco_decode_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
   }
 
   @protected
@@ -1608,6 +1853,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<TrashedDocumentDto> dco_decode_list_trashed_document_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_trashed_document_dto).toList();
+  }
+
+  @protected
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
@@ -1617,6 +1868,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ScanQuad? dco_decode_opt_box_autoadd_scan_quad(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_scan_quad(raw);
+  }
+
+  @protected
+  int? dco_decode_opt_box_autoadd_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_32(raw);
   }
 
   @protected
@@ -1674,6 +1931,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     final arr = raw as List<dynamic>;
     if (arr.length != 2) throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
     return TagDto(id: dco_decode_String(arr[0]), name: dco_decode_String(arr[1]));
+  }
+
+  @protected
+  TrashedDocumentDto dco_decode_trashed_document_dto(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3) throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return TrashedDocumentDto(
+      document: dco_decode_document_dto(arr[0]),
+      trashedMs: dco_decode_i_64(arr[1]),
+      purgeAtMs: dco_decode_i_64(arr[2]),
+    );
   }
 
   @protected
@@ -1786,6 +2055,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ScanQuad sse_decode_box_autoadd_scan_quad(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_scan_quad(deserializer));
+  }
+
+  @protected
+  int sse_decode_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_32(deserializer));
   }
 
   @protected
@@ -1993,6 +2268,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<TrashedDocumentDto> sse_decode_list_trashed_document_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <TrashedDocumentDto>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_trashed_document_dto(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
   String? sse_decode_opt_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -2009,6 +2296,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
     if (sse_decode_bool(deserializer)) {
       return (sse_decode_box_autoadd_scan_quad(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  int? sse_decode_opt_box_autoadd_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_32(deserializer));
     } else {
       return null;
     }
@@ -2068,6 +2366,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_id = sse_decode_String(deserializer);
     var var_name = sse_decode_String(deserializer);
     return TagDto(id: var_id, name: var_name);
+  }
+
+  @protected
+  TrashedDocumentDto sse_decode_trashed_document_dto(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_document = sse_decode_document_dto(deserializer);
+    var var_trashedMs = sse_decode_i_64(deserializer);
+    var var_purgeAtMs = sse_decode_i_64(deserializer);
+    return TrashedDocumentDto(document: var_document, trashedMs: var_trashedMs, purgeAtMs: var_purgeAtMs);
   }
 
   @protected
@@ -2182,6 +2489,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_box_autoadd_scan_quad(ScanQuad self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_scan_quad(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_32(self, serializer);
   }
 
   @protected
@@ -2351,6 +2664,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_list_trashed_document_dto(List<TrashedDocumentDto> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_trashed_document_dto(item, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -2367,6 +2689,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_bool(self != null, serializer);
     if (self != null) {
       sse_encode_box_autoadd_scan_quad(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_32(int? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_32(self, serializer);
     }
   }
 
@@ -2418,6 +2750,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(self.id, serializer);
     sse_encode_String(self.name, serializer);
+  }
+
+  @protected
+  void sse_encode_trashed_document_dto(TrashedDocumentDto self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_document_dto(self.document, serializer);
+    sse_encode_i_64(self.trashedMs, serializer);
+    sse_encode_i_64(self.purgeAtMs, serializer);
   }
 
   @protected
@@ -2556,7 +2896,8 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   Future<String> createTag({required String name}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandleCreateTag(that: this, name: name);
 
-  /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục).
+  /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục). Thao tác "Xóa" của người dùng đi qua
+  /// [`Self::trash_document`]; hàm này dành cho tài liệu rỗng vừa ghép xong.
   ///
   /// # Errors
   /// `NotFound`, `Storage`.
@@ -2644,12 +2985,29 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   /// `Storage`.
   Future<List<TagDto>> listTags() => RustLib.instance.api.crateApiLibraryLibraryHandleListTags(that: this);
 
+  /// Tài liệu trong thùng rác, mới bỏ vào trước.
+  ///
+  /// # Errors
+  /// `Storage`.
+  Future<List<TrashedDocumentDto>> listTrash() =>
+      RustLib.instance.api.crateApiLibraryLibraryHandleListTrash(that: this);
+
   /// Chuyển tài liệu sang thư mục (`None` = gốc).
   ///
   /// # Errors
   /// `NotFound`, `Storage`.
   Future<void> moveDocument({required String id, String? folderId}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandleMoveDocument(that: this, id: id, folderId: folderId);
+
+  /// Chuyển trang sang tài liệu khác (tách/ghép), chèn tại `at` (`None` = cuối). Ảnh được mã hóa lại bằng khóa của
+  /// tài liệu đích.
+  ///
+  /// # Errors
+  /// `InvalidInput` (rỗng/lặp/cùng tài liệu), `NotFound`, `Storage`.
+  Future<void> movePages({required List<String> pageIds, required String targetDocumentId, int? at}) => RustLib
+      .instance
+      .api
+      .crateApiLibraryLibraryHandleMovePages(that: this, pageIds: pageIds, targetDocumentId: targetDocumentId, at: at);
 
   /// Ảnh trang đầy đủ (byte đã giải mã khỏi tệp mã hóa) - để xem phóng to/xuất.
   ///
@@ -2665,6 +3023,21 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   Future<Uint8List> pageThumbnail({required String pageId, required int maxSide}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandlePageThumbnail(that: this, pageId: pageId, maxSide: maxSide);
 
+  /// Xóa vĩnh viễn một tài liệu trong thùng rác.
+  ///
+  /// # Errors
+  /// `NotFound` (không ở thùng rác), `Storage`.
+  Future<void> purgeDocument({required String id}) =>
+      RustLib.instance.api.crateApiLibraryLibraryHandlePurgeDocument(that: this, id: id);
+
+  /// Dọn sạch thùng rác (`expired_only = false`) hoặc chỉ tài liệu đã quá 30 ngày (gọi lúc mở kho). Trả số tài liệu
+  /// đã xóa hẳn.
+  ///
+  /// # Errors
+  /// `Storage`.
+  Future<int> purgeTrash({required bool expiredOnly}) =>
+      RustLib.instance.api.crateApiLibraryLibraryHandlePurgeTrash(that: this, expiredOnly: expiredOnly);
+
   /// Đổi tên tài liệu.
   ///
   /// # Errors
@@ -2679,6 +3052,28 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   Future<void> renameFolder({required String id, required String name}) =>
       RustLib.instance.api.crateApiLibraryLibraryHandleRenameFolder(that: this, id: id, name: name);
 
+  /// Sắp lại trang của tài liệu: `order` là hoán vị đúng của mọi trang.
+  ///
+  /// # Errors
+  /// `Storage` (thứ tự không khớp), `NotFound`.
+  Future<void> reorderPages({required String documentId, required List<String> order}) =>
+      RustLib.instance.api.crateApiLibraryLibraryHandleReorderPages(that: this, documentId: documentId, order: order);
+
+  /// Đưa tài liệu khỏi thùng rác.
+  ///
+  /// # Errors
+  /// `NotFound`, `Storage`.
+  Future<void> restoreDocument({required String id}) =>
+      RustLib.instance.api.crateApiLibraryLibraryHandleRestoreDocument(that: this, id: id);
+
+  /// Xoay trang theo chiều kim đồng hồ `quarter_turns` × 90° (lấy mod 4; 0 ⇒ không làm gì). Ảnh được giải mã, xoay,
+  /// mã hóa lại một lần; tệp cũ bị xóa hẳn. Chữ OCR giữ nguyên (hộp chữ cũ không còn đúng ⇒ bỏ blob).
+  ///
+  /// # Errors
+  /// `NotFound`, `UnsupportedImage`, `Storage`.
+  Future<void> rotatePage({required String pageId, required int quarterTurns}) => RustLib.instance.api
+      .crateApiLibraryLibraryHandleRotatePage(that: this, pageId: pageId, quarterTurns: quarterTurns);
+
   /// Tìm không dấu trên tiêu đề + chữ OCR (truy vấn < 2 ký tự ⇒ rỗng).
   ///
   /// # Errors
@@ -2692,4 +3087,11 @@ class LibraryHandleImpl extends RustOpaque implements LibraryHandle {
   /// `NotFound`, `Storage`.
   Future<void> setTag({required String documentId, required String tagId, required bool on_}) => RustLib.instance.api
       .crateApiLibraryLibraryHandleSetTag(that: this, documentId: documentId, tagId: tagId, on_: on_);
+
+  /// Bỏ tài liệu vào thùng rác (tự xóa hẳn sau 30 ngày).
+  ///
+  /// # Errors
+  /// `NotFound`, `Storage`.
+  Future<void> trashDocument({required String id}) =>
+      RustLib.instance.api.crateApiLibraryLibraryHandleTrashDocument(that: this, id: id);
 }

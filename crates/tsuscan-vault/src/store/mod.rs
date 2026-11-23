@@ -104,6 +104,20 @@ pub struct Tag {
     pub name: String,
 }
 
+/// Tài liệu trong thùng rác.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TrashedDocument {
+    /// Thông tin tài liệu.
+    pub info: DocumentInfo,
+    /// Lúc bỏ vào thùng rác (ms Unix).
+    pub trashed_ms: i64,
+}
+
+/// Số ngày tài liệu nằm trong thùng rác trước khi bị xóa hẳn.
+pub const TRASH_RETENTION_DAYS: i64 = 30;
+/// [`TRASH_RETENTION_DAYS`] tính bằng ms.
+pub const TRASH_RETENTION_MS: i64 = TRASH_RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
 /// Bộ lọc danh sách tài liệu (AND giữa các trường).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct DocumentFilter<'a> {
@@ -502,7 +516,7 @@ impl Vault {
     pub fn document(&self, id: &str) -> Result<DocumentInfo> {
         self.conn
             .query_row(
-                &format!("{DOC_SELECT} WHERE d.id = ?1 AND d.deleted = 0"),
+                &format!("{DOC_SELECT} WHERE d.id = ?1 AND d.deleted = 0 AND d.trashed_ms IS NULL"),
                 [id],
                 doc_row,
             )
@@ -531,7 +545,7 @@ impl Vault {
     ) -> Result<Vec<DocumentInfo>> {
         let (folder_any, folder) = folder_params(filter);
         let sql = format!(
-            "{DOC_SELECT} WHERE d.deleted = 0 AND {DOC_FILTER}
+            "{DOC_SELECT} WHERE d.deleted = 0 AND d.trashed_ms IS NULL AND {DOC_FILTER}
              ORDER BY d.updated_ms DESC, d.id LIMIT ?4 OFFSET ?5"
         );
         let mut st = self.conn.prepare(&sql)?;
@@ -550,7 +564,7 @@ impl Vault {
     pub fn count_documents(&self, filter: DocumentFilter<'_>) -> Result<u64> {
         let (folder_any, folder) = folder_params(filter);
         let n: i64 = self.conn.query_row(
-            &format!("SELECT COUNT(*) FROM documents d WHERE d.deleted = 0 AND {DOC_FILTER}"),
+            &format!("SELECT COUNT(*) FROM documents d WHERE d.deleted = 0 AND d.trashed_ms IS NULL AND {DOC_FILTER}"),
             params![folder_any, folder, filter.tag],
             |r| r.get(0),
         )?;
@@ -569,16 +583,7 @@ impl Vault {
         let page_id = new_id()?;
         let hlc = self.tick()?;
         let tx = self.conn.transaction()?;
-        tx.execute(
-            "INSERT INTO files(id, document_id, wrapped_fk, plain_len, cipher_len) VALUES (?1, ?2, ?3, ?4, ?5)",
-            params![
-                file_id,
-                document_id,
-                fk_wrapped,
-                page.image.len() as i64,
-                stream::encrypted_len(page.image.len() as u64) as i64
-            ],
-        )?;
+        insert_file_row(&tx, &file_id, document_id, &fk_wrapped, page.image.len())?;
         let pos: i64 = tx.query_row(
             "SELECT COUNT(*) FROM pages WHERE document_id = ?1 AND deleted = 0",
             [document_id],
@@ -744,6 +749,257 @@ impl Vault {
         Ok(())
     }
 
+    // ---------------------------------------------------------------- thùng rác
+
+    /// Bỏ tài liệu vào thùng rác: giữ nguyên trang/tệp, ẩn khỏi danh sách và tìm kiếm. Xóa hẳn sau
+    /// [`TRASH_RETENTION_DAYS`] ngày ([`Self::purge_trash`]) hoặc khi người dùng dọn thùng rác.
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`]; lỗi SQLite.
+    pub fn trash_document(&mut self, id: &str) -> Result<()> {
+        self.require("documents", id, "tài liệu")?;
+        let hlc = self.tick()?;
+        let tx = self.conn.transaction()?;
+        tx.execute(
+            "UPDATE documents SET trashed_ms = COALESCE(trashed_ms, ?2), hlc = ?3 WHERE id = ?1",
+            params![id, now_ms(), hlc],
+        )?;
+        search::reindex(&tx, id)?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Đưa tài liệu ra khỏi thùng rác.
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`] (kể cả tài liệu không nằm trong thùng rác); lỗi SQLite.
+    pub fn restore_document(&mut self, id: &str) -> Result<()> {
+        self.require_trashed(id)?;
+        let hlc = self.tick()?;
+        let tx = self.conn.transaction()?;
+        tx.execute(
+            "UPDATE documents SET trashed_ms = NULL, hlc = ?2, updated_ms = ?3 WHERE id = ?1",
+            params![id, hlc, now_ms()],
+        )?;
+        search::reindex(&tx, id)?;
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Tài liệu trong thùng rác, mới bỏ vào trước.
+    ///
+    /// # Errors
+    /// Lỗi SQLite.
+    pub fn list_trash(&self) -> Result<Vec<TrashedDocument>> {
+        let sql = format!(
+            "{DOC_SELECT_TRASH} WHERE d.deleted = 0 AND d.trashed_ms IS NOT NULL ORDER BY d.trashed_ms DESC, d.id"
+        );
+        let mut st = self.conn.prepare(&sql)?;
+        let rows = st.query_map([], |r| {
+            Ok(TrashedDocument {
+                info: doc_row(r)?,
+                trashed_ms: r.get(6)?,
+            })
+        })?;
+        Ok(rows.collect::<std::result::Result<_, _>>()?)
+    }
+
+    /// Xóa hẳn tài liệu đang trong thùng rác (người dùng chọn "Xóa vĩnh viễn").
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`] khi tài liệu không trong thùng rác; lỗi SQLite/vào ra.
+    pub fn purge_document(&mut self, id: &str) -> Result<()> {
+        self.require_trashed(id)?;
+        self.delete_document(id)
+    }
+
+    /// Xóa hẳn mọi tài liệu đã nằm trong thùng rác từ trước `now_ms - older_than_ms` (`older_than_ms = 0` ⇒ dọn sạch
+    /// thùng rác). Trả số tài liệu đã xóa. App gọi khi mở kho với [`TRASH_RETENTION_MS`].
+    ///
+    /// # Errors
+    /// Lỗi SQLite/vào ra.
+    pub fn purge_trash(&mut self, now_ms: i64, older_than_ms: i64) -> Result<usize> {
+        let cutoff = now_ms.saturating_sub(older_than_ms.max(0));
+        let ids: Vec<String> = {
+            let mut st = self.conn.prepare(
+                "SELECT id FROM documents WHERE deleted = 0 AND trashed_ms IS NOT NULL AND trashed_ms <= ?1",
+            )?;
+            st.query_map([cutoff], |r| r.get(0))?
+                .collect::<std::result::Result<_, _>>()?
+        };
+        for id in &ids {
+            self.delete_document(id)?;
+        }
+        Ok(ids.len())
+    }
+
+    // ---------------------------------------------------------------- sửa trang
+
+    /// Thay ảnh của trang (xoay, cắt, lọc lại...): ghi tệp mới bằng FK mới rồi xóa hẳn tệp cũ. Chữ OCR giữ nguyên
+    /// nếu `ocr` là `None`, ngược lại thay bằng `(chữ, blob)`.
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`]; [`VaultError::Format`] khi ảnh quá lớn; lỗi vào/ra, SQLite.
+    pub fn replace_page_image(
+        &mut self,
+        page_id: &str,
+        image: &[u8],
+        width: u32,
+        height: u32,
+        ocr: Option<(&str, Option<&[u8]>)>,
+    ) -> Result<()> {
+        let doc = self.page_document(page_id)?;
+        let old: Option<String> =
+            self.conn
+                .query_row("SELECT file_id FROM pages WHERE id = ?1", [page_id], |r| r.get(0))?;
+        let dk = self.document_key(&doc)?;
+        let (file_id, fk_wrapped) = self.write_file(&dk, image)?;
+        let hlc = self.tick()?;
+        let res = (|| -> Result<()> {
+            let tx = self.conn.transaction()?;
+            insert_file_row(&tx, &file_id, &doc, &fk_wrapped, image.len())?;
+            tx.execute(
+                "UPDATE pages SET file_id = ?2, width = ?3, height = ?4, hlc = ?5 WHERE id = ?1",
+                params![page_id, file_id, width, height, hlc],
+            )?;
+            if let Some((text, blob)) = ocr {
+                tx.execute(
+                    "UPDATE pages SET ocr_text = ?2, ocr_blob = ?3 WHERE id = ?1",
+                    params![page_id, text, blob],
+                )?;
+            }
+            if let Some(f) = &old {
+                tx.execute("DELETE FROM files WHERE id = ?1", [f])?;
+            }
+            tx.execute(
+                "UPDATE documents SET updated_ms = ?2, hlc = ?3 WHERE id = ?1",
+                params![doc, now_ms(), hlc],
+            )?;
+            search::reindex(&tx, &doc)?;
+            tx.commit()?;
+            Ok(())
+        })();
+        if let Err(e) = res {
+            remove_if_exists(&self.file_path(&file_id))?;
+            return Err(e);
+        }
+        if let Some(f) = old {
+            remove_if_exists(&self.file_path(&f))?;
+        }
+        Ok(())
+    }
+
+    /// Chuyển các trang sang tài liệu `target` (ghép/tách tài liệu), chèn tại vị trí `at` (`None` = cuối), giữ thứ tự
+    /// của `page_ids`. Ảnh được giải mã bằng DK nguồn rồi mã hóa lại bằng FK mới bọc bằng DK đích (khóa của tài liệu
+    /// nguồn không bao giờ dùng được cho tài liệu đích); tệp cũ bị xóa hẳn. Trang giữ nguyên id và chữ OCR.
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`]; [`VaultError::Format`] khi danh sách rỗng/lặp hoặc trang đã thuộc `target`; lỗi vào/ra,
+    /// SQLite.
+    pub fn move_pages(&mut self, page_ids: &[&str], target: &str, at: Option<usize>) -> Result<()> {
+        if page_ids.is_empty() {
+            return Err(VaultError::Format("không có trang nào để chuyển"));
+        }
+        let mut seen = std::collections::HashSet::new();
+        if !page_ids.iter().all(|p| seen.insert(*p)) {
+            return Err(VaultError::Format("trang bị lặp"));
+        }
+        let target_dk = self.document_key(target)?;
+        let mut moves = Vec::with_capacity(page_ids.len());
+        for pid in page_ids {
+            let src = self.page_document(pid)?;
+            if src == target {
+                return Err(VaultError::Format("trang đã thuộc tài liệu đích"));
+            }
+            moves.push((*pid, src));
+        }
+        // Ghi các tệp mới trước; lỗi giữa chừng ⇒ xóa tệp đã ghi, CSDL không đổi.
+        let mut written: Vec<(String, Vec<u8>, usize, Option<String>)> = Vec::with_capacity(moves.len());
+        let res = (|| -> Result<()> {
+            for (pid, src) in &moves {
+                let old: Option<String> =
+                    self.conn
+                        .query_row("SELECT file_id FROM pages WHERE id = ?1", [pid], |r| r.get(0))?;
+                let Some(old) = old else {
+                    return Err(VaultError::NotFound("ảnh trang"));
+                };
+                let src_dk = self.document_key(src)?;
+                let data = self.read_file(&src_dk, &old)?;
+                let (fid, wrapped) = self.write_file(&target_dk, &data)?;
+                written.push((fid, wrapped, data.len(), Some(old)));
+            }
+            Ok(())
+        })();
+        if let Err(e) = res {
+            for (fid, ..) in &written {
+                remove_if_exists(&self.file_path(fid))?;
+            }
+            return Err(e);
+        }
+        let hlc = self.tick()?;
+        let mut sources: Vec<String> = moves.iter().map(|(_, s)| s.clone()).collect();
+        sources.sort();
+        sources.dedup();
+        let res = (|| -> Result<()> {
+            let tx = self.conn.transaction()?;
+            let mut order: Vec<String> = {
+                let mut st = tx.prepare(
+                    "SELECT id FROM pages WHERE document_id = ?1 AND deleted = 0 ORDER BY position",
+                )?;
+                st.query_map([target], |r| r.get(0))?
+                    .collect::<std::result::Result<_, _>>()?
+            };
+            let at = at.unwrap_or(order.len()).min(order.len());
+            for ((pid, _), (fid, wrapped, len, old)) in moves.iter().zip(&written) {
+                insert_file_row(&tx, fid, target, wrapped, *len)?;
+                tx.execute(
+                    "UPDATE pages SET document_id = ?2, file_id = ?3, hlc = ?4 WHERE id = ?1",
+                    params![pid, target, fid, hlc],
+                )?;
+                if let Some(o) = old {
+                    tx.execute("DELETE FROM files WHERE id = ?1", [o])?;
+                }
+            }
+            for (i, (pid, _)) in moves.iter().enumerate() {
+                order.insert(at + i, (*pid).to_owned());
+            }
+            let refs: Vec<&str> = order.iter().map(String::as_str).collect();
+            renumber(&tx, target, Some(&refs), &hlc)?;
+            for s in sources.iter().map(String::as_str).chain(std::iter::once(target)) {
+                if s != target {
+                    renumber(&tx, s, None, &hlc)?;
+                }
+                tx.execute(
+                    "UPDATE documents SET updated_ms = ?2, hlc = ?3 WHERE id = ?1",
+                    params![s, now_ms(), hlc],
+                )?;
+                search::reindex(&tx, s)?;
+            }
+            tx.commit()?;
+            Ok(())
+        })();
+        if let Err(e) = res {
+            for (fid, ..) in &written {
+                remove_if_exists(&self.file_path(fid))?;
+            }
+            return Err(e);
+        }
+        for (_, _, _, old) in written {
+            if let Some(o) = old {
+                remove_if_exists(&self.file_path(&o))?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Id tài liệu chứa trang.
+    ///
+    /// # Errors
+    /// [`VaultError::NotFound`]; lỗi SQLite.
+    pub fn page_document_id(&self, page_id: &str) -> Result<String> {
+        self.page_document(page_id)
+    }
+
     // ---------------------------------------------------------------- tìm kiếm
 
     /// Tìm tài liệu theo tiêu đề + chữ OCR, không dấu, tiền tố; khớp đúng dấu xếp cao hơn.
@@ -763,6 +1019,17 @@ impl Vault {
             .query_row(&sql, [id], |_| Ok(()))
             .optional()?
             .ok_or(VaultError::NotFound(what))
+    }
+
+    fn require_trashed(&self, id: &str) -> Result<()> {
+        self.conn
+            .query_row(
+                "SELECT 1 FROM documents WHERE id = ?1 AND deleted = 0 AND trashed_ms IS NOT NULL",
+                [id],
+                |_| Ok(()),
+            )
+            .optional()?
+            .ok_or(VaultError::NotFound("tài liệu trong thùng rác"))
     }
 
     fn page_document(&self, page_id: &str) -> Result<String> {
@@ -812,6 +1079,29 @@ fn folder_params(filter: DocumentFilter<'_>) -> (i64, Option<&str>) {
 
 const DOC_SELECT: &str = "SELECT d.id, d.title, d.folder_id, d.created_ms, d.updated_ms,
     (SELECT COUNT(*) FROM pages p WHERE p.document_id = d.id AND p.deleted = 0) FROM documents d";
+
+const DOC_SELECT_TRASH: &str = "SELECT d.id, d.title, d.folder_id, d.created_ms, d.updated_ms,
+    (SELECT COUNT(*) FROM pages p WHERE p.document_id = d.id AND p.deleted = 0), d.trashed_ms FROM documents d";
+
+fn insert_file_row(
+    tx: &rusqlite::Transaction<'_>,
+    file_id: &str,
+    document_id: &str,
+    wrapped_fk: &[u8],
+    len: usize,
+) -> Result<()> {
+    tx.execute(
+        "INSERT INTO files(id, document_id, wrapped_fk, plain_len, cipher_len) VALUES (?1, ?2, ?3, ?4, ?5)",
+        params![
+            file_id,
+            document_id,
+            wrapped_fk,
+            len as i64,
+            stream::encrypted_len(len as u64) as i64
+        ],
+    )?;
+    Ok(())
+}
 
 fn doc_row(r: &rusqlite::Row<'_>) -> rusqlite::Result<DocumentInfo> {
     Ok(DocumentInfo {

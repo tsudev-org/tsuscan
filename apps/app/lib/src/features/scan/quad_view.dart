@@ -41,8 +41,9 @@ class QuadPainter extends CustomPainter {
 }
 
 /// Ảnh đầy đủ + bốn tay nắm góc kéo được. Mỗi tay nắm nhận tiêu điểm và di chuyển bằng phím mũi tên (bàn phím, trình
-/// đọc màn hình) - không chỉ kéo bằng ngón tay (ACCESSIBILITY.md).
-class QuadEditor extends StatelessWidget {
+/// đọc màn hình) - không chỉ kéo bằng ngón tay (ACCESSIBILITY.md). Khi đang kéo, kính lúp phóng to vùng quanh góc
+/// hiện lệch khỏi ngón tay để đặt góc chính xác.
+class QuadEditor extends StatefulWidget {
   const QuadEditor({
     super.key,
     required this.image,
@@ -60,26 +61,38 @@ class QuadEditor extends StatelessWidget {
   final ValueChanged<ScanQuad> onChanged;
   final bool valid;
 
+  @override
+  State<QuadEditor> createState() => _QuadEditorState();
+}
+
+class _QuadEditorState extends State<QuadEditor> {
   /// Vùng chạm của tay nắm (≥ 44 px - ACCESSIBILITY.md).
   static const _handle = 48.0;
+  static const _loupe = 112.0;
+  static const _loupeGap = 72.0;
+
+  /// Góc đang kéo (`null` = không kéo).
+  int? _dragging;
 
   @override
   Widget build(BuildContext context) {
+    final quad = widget.quad;
+    final onChanged = widget.onChanged;
     final l = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final color = valid ? scheme.primary : scheme.error;
+    final color = widget.valid ? scheme.primary : scheme.error;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(_handle / 2),
         child: AspectRatio(
-          aspectRatio: aspectRatio,
+          aspectRatio: widget.aspectRatio,
           child: LayoutBuilder(
             builder: (context, c) {
               final size = Size(c.maxWidth, c.maxHeight);
               return Stack(
                 clipBehavior: Clip.none,
                 children: [
-                  Positioned.fill(child: Image.memory(image, fit: BoxFit.fill, gaplessPlayback: true)),
+                  Positioned.fill(child: Image.memory(widget.image, fit: BoxFit.fill, gaplessPlayback: true)),
                   Positioned.fill(
                     child: CustomPaint(
                       painter: QuadPainter(quad: quad, color: color),
@@ -94,6 +107,7 @@ class QuadEditor extends StatelessWidget {
                       child: _Handle(
                         label: '${cornerLabel(l, i)}. ${l.scanCornerHint}',
                         color: color,
+                        onDragState: (on) => setState(() => _dragging = on ? i : null),
                         onDrag: (d) {
                           final p = quad.point(i);
                           onChanged(quad.withPoint(i, p.x + d.dx / size.width, p.y + d.dy / size.height));
@@ -104,6 +118,7 @@ class QuadEditor extends StatelessWidget {
                         },
                       ),
                     ),
+                  if (_dragging case final i?) _magnifier(quad.point(i), size, color),
                 ],
               );
             },
@@ -114,11 +129,54 @@ class QuadEditor extends StatelessWidget {
   }
 }
 
+extension on _QuadEditorState {
+  /// Kính lúp ×2,5 đặt phía trên góc (hoặc phía dưới khi góc sát mép trên), tâm phóng to đúng vào góc.
+  Widget _magnifier(({double x, double y}) p, Size size, Color color) {
+    const r = _QuadEditorState._loupe / 2;
+    const gap = _QuadEditorState._loupeGap;
+    final cx = p.x * size.width;
+    final cy = p.y * size.height;
+    final above = cy - gap - r >= -_QuadEditorState._handle / 2;
+    final dy = above ? -gap : gap;
+    return Positioned(
+      left: cx - r,
+      top: cy + dy - r,
+      width: _QuadEditorState._loupe,
+      height: _QuadEditorState._loupe,
+      child: IgnorePointer(
+        child: ExcludeSemantics(
+          child: Stack(
+            children: [
+              RawMagnifier(
+                size: const Size.square(_QuadEditorState._loupe),
+                magnificationScale: 2.5,
+                focalPointOffset: Offset(0, -dy),
+                decoration: MagnifierDecoration(
+                  shape: CircleBorder(side: BorderSide(color: color, width: 2)),
+                  shadows: const [BoxShadow(blurRadius: 6, color: Color(0x55000000))],
+                ),
+              ),
+              Center(child: Icon(Icons.add, size: 18, color: color)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _Handle extends StatefulWidget {
-  const _Handle({required this.label, required this.color, required this.onDrag, required this.onNudge});
+  const _Handle({
+    required this.label,
+    required this.color,
+    required this.onDrag,
+    required this.onNudge,
+    required this.onDragState,
+  });
   final String label;
   final Color color;
   final ValueChanged<Offset> onDrag;
+  final ValueChanged<bool> onDragState;
   final void Function(double dx, double dy) onNudge;
 
   @override
@@ -154,7 +212,10 @@ class _HandleState extends State<_Handle> {
         onFocusChange: (f) => setState(() => _focused = f),
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
+          onPanStart: (_) => widget.onDragState(true),
           onPanUpdate: (d) => widget.onDrag(d.delta),
+          onPanEnd: (_) => widget.onDragState(false),
+          onPanCancel: () => widget.onDragState(false),
           child: Center(
             child: Container(
               width: 22,

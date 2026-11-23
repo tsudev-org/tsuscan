@@ -10,8 +10,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 import 'scan.dart';
 
-// These functions are ignored because they are not marked as `pub`: `clean_name`, `doc_dto`, `encode_jpeg`, `key_from`, `lock`, `wrap`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
+// These functions are ignored because they are not marked as `pub`: `clean_name`, `doc_dto`, `encode_jpeg`, `key_from`, `lock`, `now_ms`, `vault_page_document`, `wrap`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `assert_fields_are_eq`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `clone`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `eq`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`, `fmt`
 
 /// Sinh khóa CSDL 32 byte ngẫu nhiên (app cất vào kho bí mật của thiết bị).
 ///
@@ -61,7 +61,8 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// `InvalidInput`, `Storage`.
   Future<String> createTag({required String name});
 
-  /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục).
+  /// Xóa hẳn tài liệu (tệp trang, chữ OCR, chỉ mục). Thao tác "Xóa" của người dùng đi qua
+  /// [`Self::trash_document`]; hàm này dành cho tài liệu rỗng vừa ghép xong.
   ///
   /// # Errors
   /// `NotFound`, `Storage`.
@@ -134,11 +135,24 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// `Storage`.
   Future<List<TagDto>> listTags();
 
+  /// Tài liệu trong thùng rác, mới bỏ vào trước.
+  ///
+  /// # Errors
+  /// `Storage`.
+  Future<List<TrashedDocumentDto>> listTrash();
+
   /// Chuyển tài liệu sang thư mục (`None` = gốc).
   ///
   /// # Errors
   /// `NotFound`, `Storage`.
   Future<void> moveDocument({required String id, String? folderId});
+
+  /// Chuyển trang sang tài liệu khác (tách/ghép), chèn tại `at` (`None` = cuối). Ảnh được mã hóa lại bằng khóa của
+  /// tài liệu đích.
+  ///
+  /// # Errors
+  /// `InvalidInput` (rỗng/lặp/cùng tài liệu), `NotFound`, `Storage`.
+  Future<void> movePages({required List<String> pageIds, required String targetDocumentId, int? at});
 
   /// Mở kho có sẵn.
   ///
@@ -159,6 +173,19 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// `NotFound`, `UnsupportedImage`, `Storage`.
   Future<Uint8List> pageThumbnail({required String pageId, required int maxSide});
 
+  /// Xóa vĩnh viễn một tài liệu trong thùng rác.
+  ///
+  /// # Errors
+  /// `NotFound` (không ở thùng rác), `Storage`.
+  Future<void> purgeDocument({required String id});
+
+  /// Dọn sạch thùng rác (`expired_only = false`) hoặc chỉ tài liệu đã quá 30 ngày (gọi lúc mở kho). Trả số tài liệu
+  /// đã xóa hẳn.
+  ///
+  /// # Errors
+  /// `Storage`.
+  Future<int> purgeTrash({required bool expiredOnly});
+
   /// Đổi tên tài liệu.
   ///
   /// # Errors
@@ -171,6 +198,25 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// `InvalidInput`, `NotFound`, `Storage`.
   Future<void> renameFolder({required String id, required String name});
 
+  /// Sắp lại trang của tài liệu: `order` là hoán vị đúng của mọi trang.
+  ///
+  /// # Errors
+  /// `Storage` (thứ tự không khớp), `NotFound`.
+  Future<void> reorderPages({required String documentId, required List<String> order});
+
+  /// Đưa tài liệu khỏi thùng rác.
+  ///
+  /// # Errors
+  /// `NotFound`, `Storage`.
+  Future<void> restoreDocument({required String id});
+
+  /// Xoay trang theo chiều kim đồng hồ `quarter_turns` × 90° (lấy mod 4; 0 ⇒ không làm gì). Ảnh được giải mã, xoay,
+  /// mã hóa lại một lần; tệp cũ bị xóa hẳn. Chữ OCR giữ nguyên (hộp chữ cũ không còn đúng ⇒ bỏ blob).
+  ///
+  /// # Errors
+  /// `NotFound`, `UnsupportedImage`, `Storage`.
+  Future<void> rotatePage({required String pageId, required int quarterTurns});
+
   /// Tìm không dấu trên tiêu đề + chữ OCR (truy vấn < 2 ký tự ⇒ rỗng).
   ///
   /// # Errors
@@ -182,6 +228,12 @@ abstract class LibraryHandle implements RustOpaqueInterface {
   /// # Errors
   /// `NotFound`, `Storage`.
   Future<void> setTag({required String documentId, required String tagId, required bool on_});
+
+  /// Bỏ tài liệu vào thùng rác (tự xóa hẳn sau 30 ngày).
+  ///
+  /// # Errors
+  /// `NotFound`, `Storage`.
+  Future<void> trashDocument({required String id});
 }
 
 /// Tài liệu (DTO).
@@ -362,4 +414,30 @@ class TagDto {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TagDto && runtimeType == other.runtimeType && id == other.id && name == other.name;
+}
+
+/// Tài liệu trong thùng rác.
+class TrashedDocumentDto {
+  /// Thông tin tài liệu.
+  final DocumentDto document;
+
+  /// Lúc bỏ vào thùng rác (ms Unix).
+  final PlatformInt64 trashedMs;
+
+  /// Lúc sẽ tự xóa hẳn (ms Unix).
+  final PlatformInt64 purgeAtMs;
+
+  const TrashedDocumentDto({required this.document, required this.trashedMs, required this.purgeAtMs});
+
+  @override
+  int get hashCode => document.hashCode ^ trashedMs.hashCode ^ purgeAtMs.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TrashedDocumentDto &&
+          runtimeType == other.runtimeType &&
+          document == other.document &&
+          trashedMs == other.trashedMs &&
+          purgeAtMs == other.purgeAtMs;
 }

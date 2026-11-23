@@ -1129,6 +1129,192 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Kéo để chỉnh; dùng phím mũi tên khi đang chọn'**
   String get scanCornerHint;
+
+  /// No description provided for @confirmTrashDocumentTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển vào thùng rác?'**
+  String get confirmTrashDocumentTitle;
+
+  /// No description provided for @confirmTrashDocumentBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'\"{title}\" sẽ nằm trong thùng rác {days} ngày rồi bị xóa hẳn. Có thể khôi phục trước đó.'**
+  String confirmTrashDocumentBody(String title, int days);
+
+  /// No description provided for @actionMoveToTrash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển vào thùng rác'**
+  String get actionMoveToTrash;
+
+  /// No description provided for @actionUndo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tác'**
+  String get actionUndo;
+
+  /// No description provided for @actionRestore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khôi phục'**
+  String get actionRestore;
+
+  /// No description provided for @actionDeleteForever.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa vĩnh viễn'**
+  String get actionDeleteForever;
+
+  /// No description provided for @trashMoved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chuyển \"{title}\" vào thùng rác'**
+  String trashMoved(String title);
+
+  /// No description provided for @trashRestored.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã khôi phục \"{title}\"'**
+  String trashRestored(String title);
+
+  /// No description provided for @trashTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thùng rác'**
+  String get trashTitle;
+
+  /// No description provided for @trashEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thùng rác trống'**
+  String get trashEmpty;
+
+  /// No description provided for @trashHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tài liệu trong thùng rác tự xóa hẳn sau {days} ngày.'**
+  String trashHint(int days);
+
+  /// No description provided for @trashPurgeOn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa hẳn ngày {date}'**
+  String trashPurgeOn(String date);
+
+  /// No description provided for @trashEmptyAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dọn sạch thùng rác'**
+  String get trashEmptyAll;
+
+  /// No description provided for @confirmEmptyTrashTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dọn sạch thùng rác?'**
+  String get confirmEmptyTrashTitle;
+
+  /// No description provided for @confirmEmptyTrashBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} tài liệu sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.'**
+  String confirmEmptyTrashBody(int count);
+
+  /// No description provided for @confirmPurgeTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa vĩnh viễn?'**
+  String get confirmPurgeTitle;
+
+  /// No description provided for @confirmPurgeBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'\"{title}\" và mọi trang của nó sẽ bị xóa hẳn khỏi máy này. Không thể hoàn tác.'**
+  String confirmPurgeBody(String title);
+
+  /// No description provided for @pageActions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thao tác với trang'**
+  String get pageActions;
+
+  /// No description provided for @pageRotateRight.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay phải'**
+  String get pageRotateRight;
+
+  /// No description provided for @pageRotateLeft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoay trái'**
+  String get pageRotateLeft;
+
+  /// No description provided for @pageMoveEarlier.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa lên trước'**
+  String get pageMoveEarlier;
+
+  /// No description provided for @pageMoveLater.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đưa ra sau'**
+  String get pageMoveLater;
+
+  /// No description provided for @pageMoveToDocument.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển sang tài liệu khác…'**
+  String get pageMoveToDocument;
+
+  /// No description provided for @pageSplitFromHere.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tách từ trang này thành tài liệu mới'**
+  String get pageSplitFromHere;
+
+  /// No description provided for @pageMovedTo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã chuyển trang sang \"{title}\"'**
+  String pageMovedTo(String title);
+
+  /// No description provided for @documentSplitTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'{title} (phần 2)'**
+  String documentSplitTitle(String title);
+
+  /// No description provided for @documentSplitDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã tách {count} trang sang \"{title}\"'**
+  String documentSplitDone(int count, String title);
+
+  /// No description provided for @documentMergeInto.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghép tài liệu khác vào đây…'**
+  String get documentMergeInto;
+
+  /// No description provided for @documentPickTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tài liệu'**
+  String get documentPickTitle;
+
+  /// No description provided for @documentNoOthers.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có tài liệu nào khác'**
+  String get documentNoOthers;
+
+  /// No description provided for @documentMerged.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã ghép {count} trang từ \"{title}\"'**
+  String documentMerged(int count, String title);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

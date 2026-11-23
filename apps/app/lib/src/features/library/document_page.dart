@@ -175,19 +175,120 @@ class _DocumentPageState extends State<DocumentScreen> {
 
   Future<void> _delete() async {
     final l = AppLocalizations.of(context);
+    final title = _doc!.title;
     final ok = await confirmDanger(
       context,
-      title: l.confirmDeleteDocumentTitle,
-      body: l.confirmDeleteDocumentBody(_doc!.title),
+      title: l.confirmTrashDocumentTitle,
+      body: l.confirmTrashDocumentBody(title, trashRetentionDays),
+      action: l.actionMoveToTrash,
     );
     if (!ok || !mounted) return;
+    final app = _app;
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      await _app.repository.deleteDocument(widget.documentId);
+      await app.repository.trashDocument(widget.documentId);
       if (mounted) Navigator.of(context).pop();
-      _app.changes.bump();
+      app.changes.bump();
+      final id = widget.documentId;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(l.trashMoved(title)),
+            action: SnackBarAction(
+              label: l.actionUndo,
+              onPressed: () async {
+                await app.repository.restoreDocument(id);
+                app.changes.bump();
+              },
+            ),
+          ),
+        );
     } on Object catch (e) {
       if (mounted) showError(context, e);
     }
+  }
+
+  // ------------------------------------------------------------ thao tác trang (P7a)
+
+  Future<void> _rotate(PageInfo page, int quarterTurns) =>
+      _run(() => _app.repository.rotatePage(page.id, quarterTurns));
+
+  Future<void> _shift(PageInfo page, int delta) async {
+    final ids = [for (final p in _pages) p.id];
+    final i = ids.indexOf(page.id);
+    final j = i + delta;
+    if (i < 0 || j < 0 || j >= ids.length) return;
+    ids
+      ..removeAt(i)
+      ..insert(j, page.id);
+    await _run(() => _app.repository.reorderPages(widget.documentId, ids));
+  }
+
+  /// Hộp chọn một tài liệu khác (tối đa 200 tài liệu sửa gần nhất).
+  Future<Document?> _pickOtherDocument() async {
+    final l = AppLocalizations.of(context);
+    final page = await _app.repository.listDocuments(const AllFolders(), limit: 200, offset: 0);
+    final others = page.items.where((d) => d.id != widget.documentId).toList();
+    if (!mounted) return null;
+    if (others.isEmpty) {
+      showWarning(context, l.documentNoOthers);
+      return null;
+    }
+    return showDialog<Document>(
+      context: context,
+      builder: (c) => SimpleDialog(
+        title: Text(l.documentPickTitle),
+        children: [
+          for (final d in others)
+            ListTile(
+              leading: const Icon(Icons.description_outlined),
+              title: Text(d.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+              subtitle: Text(l.libraryPages(d.pageCount)),
+              onTap: () => Navigator.of(c).pop(d),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _moveToDocument(PageInfo page) async {
+    final l = AppLocalizations.of(context);
+    final target = await _pickOtherDocument();
+    if (target == null) return;
+    await _run(() => _app.repository.movePages([page.id], target.id));
+    if (mounted) showInfo(context, l.pageMovedTo(target.title));
+  }
+
+  Future<void> _splitFrom(PageInfo page) async {
+    final l = AppLocalizations.of(context);
+    final i = _pages.indexWhere((p) => p.id == page.id);
+    if (i <= 0) return;
+    final ids = [for (final p in _pages.skip(i)) p.id];
+    final title = l.documentSplitTitle(_doc!.title);
+    final repo = _app.repository;
+    final folder = _doc!.folderId;
+    await _run(() async {
+      final id = await repo.createDocument(title.characters.take(200).toString(), folderId: folder);
+      await repo.movePages(ids, id);
+    });
+    if (mounted) showInfo(context, l.documentSplitDone(ids.length, title));
+  }
+
+  Future<void> _mergeOther() async {
+    final l = AppLocalizations.of(context);
+    final source = await _pickOtherDocument();
+    if (source == null) return;
+    final repo = _app.repository;
+    var count = 0;
+    await _run(() async {
+      final ids = [for (final p in await repo.listPages(source.id)) p.id];
+      count = ids.length;
+      if (ids.isNotEmpty) await repo.movePages(ids, widget.documentId);
+      // Tài liệu nguồn đã rỗng ⇒ vào thùng rác (khôi phục được nhãn/tên nếu ghép nhầm).
+      await repo.trashDocument(source.id);
+    });
+    if (mounted) showInfo(context, l.documentMerged(count, source.title));
   }
 
   Future<void> _deletePage(PageInfo page) async {
@@ -237,6 +338,47 @@ class _DocumentPageState extends State<DocumentScreen> {
     );
   }
 
+  Widget _pageMenu(PageInfo page, int index) {
+    final l = AppLocalizations.of(context);
+    final p = context.palette;
+    final last = index == _pages.length - 1;
+    return PopupMenuButton<String>(
+      tooltip: l.pageActions,
+      icon: Icon(Icons.more_vert, size: 18, color: p.textSecondary),
+      onSelected: (v) => switch (v) {
+        'right' => _rotate(page, 1),
+        'left' => _rotate(page, 3),
+        'earlier' => _shift(page, -1),
+        'later' => _shift(page, 1),
+        'move' => _moveToDocument(page),
+        'split' => _splitFrom(page),
+        _ => _deletePage(page),
+      },
+      itemBuilder: (_) => [
+        PopupMenuItem(value: 'right', child: _menuRow(Icons.rotate_right, l.pageRotateRight)),
+        PopupMenuItem(value: 'left', child: _menuRow(Icons.rotate_left, l.pageRotateLeft)),
+        PopupMenuItem(value: 'earlier', enabled: index > 0, child: _menuRow(Icons.arrow_back, l.pageMoveEarlier)),
+        PopupMenuItem(value: 'later', enabled: !last, child: _menuRow(Icons.arrow_forward, l.pageMoveLater)),
+        PopupMenuItem(value: 'move', child: _menuRow(Icons.drive_file_move_outline, l.pageMoveToDocument)),
+        PopupMenuItem(value: 'split', enabled: index > 0, child: _menuRow(Icons.call_split, l.pageSplitFromHere)),
+        PopupMenuItem(
+          value: 'delete',
+          child: _menuRow(Icons.delete_outline, l.actionDelete, color: p.danger),
+        ),
+      ],
+    );
+  }
+
+  static Widget _menuRow(IconData icon, String label, {Color? color}) => Row(
+    children: [
+      Icon(icon, size: 20, color: color),
+      const SizedBox(width: TsSpace.s3),
+      Flexible(
+        child: Text(label, style: TextStyle(color: color)),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
@@ -263,14 +405,16 @@ class _DocumentPageState extends State<DocumentScreen> {
             onSelected: (v) => switch (v) {
               'rename' => _rename(),
               'move' => _move(),
+              'merge' => _mergeOther(),
               _ => _delete(),
             },
             itemBuilder: (_) => [
               PopupMenuItem(value: 'rename', child: Text(l.actionRename)),
               PopupMenuItem(value: 'move', child: Text(l.actionMove)),
+              PopupMenuItem(value: 'merge', child: Text(l.documentMergeInto)),
               PopupMenuItem(
                 value: 'delete',
-                child: Text(l.actionDelete, style: TextStyle(color: p.danger)),
+                child: Text(l.actionMoveToTrash, style: TextStyle(color: p.danger)),
               ),
             ],
           ),
@@ -333,8 +477,7 @@ class _DocumentPageState extends State<DocumentScreen> {
                   page: _pages[i],
                   label: l.documentPageLabel(i + 1),
                   onTap: () => _view(_pages[i]),
-                  onDelete: () => _deletePage(_pages[i]),
-                  deleteLabel: l.actionDelete,
+                  menu: _pageMenu(_pages[i], i),
                 ),
               ),
             ),
@@ -345,18 +488,11 @@ class _DocumentPageState extends State<DocumentScreen> {
 }
 
 class _PageCard extends StatelessWidget {
-  const _PageCard({
-    required this.page,
-    required this.label,
-    required this.onTap,
-    required this.onDelete,
-    required this.deleteLabel,
-  });
+  const _PageCard({required this.page, required this.label, required this.onTap, required this.menu});
   final PageInfo page;
   final String label;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
-  final String deleteLabel;
+  final Widget menu;
 
   @override
   Widget build(BuildContext context) {
@@ -368,11 +504,13 @@ class _PageCard extends StatelessWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
-          onLongPress: onDelete,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: PageThumbnail(pageId: page.id)),
+              // Khóa theo kích thước ⇒ xoay xong ảnh thu nhỏ được tải lại.
+              Expanded(
+                child: PageThumbnail(key: ValueKey('${page.id}:${page.width}x${page.height}'), pageId: page.id),
+              ),
               Divider(height: 1, color: p.border),
               Row(
                 children: [
@@ -382,11 +520,7 @@ class _PageCard extends StatelessWidget {
                       child: Text(label, style: const TextStyle(fontSize: TsFontSize.sm)),
                     ),
                   ),
-                  IconButton(
-                    tooltip: deleteLabel,
-                    icon: Icon(Icons.delete_outline, size: 18, color: p.textSecondary),
-                    onPressed: onDelete,
-                  ),
+                  menu,
                 ],
               ),
             ],

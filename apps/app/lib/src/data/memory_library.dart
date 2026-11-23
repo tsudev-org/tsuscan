@@ -15,6 +15,7 @@ final class MemoryLibraryRepository implements LibraryRepository {
   final _docs = <String, Document>{};
   final _docTags = <String, Set<String>>{};
   final _pages = <String, List<(PageInfo, Uint8List)>>{};
+  final _trashed = <String, int>{};
   var _seq = 0;
 
   String _id() => (++_seq).toRadixString(16).padLeft(32, '0');
@@ -103,6 +104,7 @@ final class MemoryLibraryRepository implements LibraryRepository {
     required int offset,
   }) async {
     final all = _docs.values.where((d) {
+      if (_trashed.containsKey(d.id)) return false;
       final inScope = switch (scope) {
         AllFolders() => true,
         RootFolder() => d.folderId == null,
@@ -114,7 +116,7 @@ final class MemoryLibraryRepository implements LibraryRepository {
   }
 
   @override
-  Future<Document> document(String id) async => _need(_docs[id]);
+  Future<Document> document(String id) async => _need(_trashed.containsKey(id) ? null : _docs[id]);
 
   @override
   Future<String> createDocument(String title, {String? folderId}) async {
@@ -147,6 +149,46 @@ final class MemoryLibraryRepository implements LibraryRepository {
     _need(_docs.remove(id));
     _pages.remove(id);
     _docTags.remove(id);
+    _trashed.remove(id);
+  }
+
+  @override
+  Future<void> trashDocument(String id) async {
+    _need(_docs[id]);
+    _trashed.putIfAbsent(id, () => _now);
+  }
+
+  @override
+  Future<void> restoreDocument(String id) async {
+    _need(_trashed.remove(id));
+    _docs[id] = _docs[id]!.copyWith(updatedMs: _now);
+  }
+
+  static const _retentionMs = trashRetentionDays * 24 * 60 * 60 * 1000;
+
+  @override
+  Future<List<TrashedDocument>> listTrash() async => [
+    for (final MapEntry(key: id, value: at) in _trashed.entries)
+      TrashedDocument(document: _docs[id]!, trashedMs: at, purgeAtMs: at + _retentionMs),
+  ]..sort((a, b) => b.trashedMs.compareTo(a.trashedMs));
+
+  @override
+  Future<void> purgeDocument(String id) async {
+    _need(_trashed[id]);
+    await deleteDocument(id);
+  }
+
+  @override
+  Future<int> purgeTrash({required bool expiredOnly}) async {
+    final cutoff = _now - (expiredOnly ? _retentionMs : 0);
+    final ids = [
+      for (final MapEntry(key: id, value: at) in _trashed.entries)
+        if (at <= cutoff) id,
+    ];
+    for (final id in ids) {
+      await deleteDocument(id);
+    }
+    return ids.length;
   }
 
   @override
@@ -203,6 +245,75 @@ final class MemoryLibraryRepository implements LibraryRepository {
     throw const ApiError(kind: ApiErrorKind.notFound, detail: 'trang');
   }
 
+  (String, int) _locate(String pageId) {
+    for (final MapEntry(key: docId, value: list) in _pages.entries) {
+      final i = list.indexWhere((e) => e.$1.id == pageId);
+      if (i >= 0) return (docId, i);
+    }
+    throw const ApiError(kind: ApiErrorKind.notFound, detail: 'trang');
+  }
+
+  void _renumber(String docId) {
+    final list = _pages[docId] ?? [];
+    for (var k = 0; k < list.length; k++) {
+      final p = list[k].$1;
+      list[k] = (PageInfo(id: p.id, position: k, width: p.width, height: p.height, ocrText: p.ocrText), list[k].$2);
+    }
+    _docs[docId] = _docs[docId]!.copyWith(pageCount: list.length, updatedMs: _now);
+  }
+
+  @override
+  Future<void> rotatePage(String pageId, int quarterTurns) async {
+    final (docId, i) = _locate(pageId);
+    if (quarterTurns % 4 == 0) return;
+    final list = _pages[docId]!;
+    final (p, bytes) = list[i];
+    final swap = quarterTurns.isOdd;
+    list[i] = (
+      PageInfo(
+        id: p.id,
+        position: p.position,
+        width: swap ? p.height : p.width,
+        height: swap ? p.width : p.height,
+        ocrText: p.ocrText,
+      ),
+      bytes,
+    );
+    _docs[docId] = _docs[docId]!.copyWith(updatedMs: _now);
+  }
+
+  @override
+  Future<void> reorderPages(String documentId, List<String> order) async {
+    final list = _pages[documentId] ?? [];
+    final byId = {for (final e in list) e.$1.id: e};
+    if (order.length != list.length || order.toSet().length != order.length || !order.every(byId.containsKey)) {
+      throw const ApiError(kind: ApiErrorKind.storage, detail: 'thứ tự trang không khớp danh sách trang');
+    }
+    _pages[documentId] = [for (final id in order) byId[id]!];
+    _renumber(documentId);
+  }
+
+  @override
+  Future<void> movePages(List<String> pageIds, String targetDocumentId, {int? at}) async {
+    _need(_docs[targetDocumentId]);
+    if (pageIds.isEmpty || pageIds.toSet().length != pageIds.length) {
+      throw const ApiError(kind: ApiErrorKind.invalidInput, detail: 'danh sách trang không hợp lệ');
+    }
+    final located = [for (final id in pageIds) _locate(id)];
+    if (located.any((l) => l.$1 == targetDocumentId)) {
+      throw const ApiError(kind: ApiErrorKind.invalidInput, detail: 'trang đã thuộc tài liệu đích');
+    }
+    final moved = [for (final (doc, i) in located) _pages[doc]![i]];
+    final sources = {for (final (doc, _) in located) doc};
+    for (final doc in sources) {
+      _pages[doc]!.removeWhere((e) => pageIds.contains(e.$1.id));
+      _renumber(doc);
+    }
+    final target = _pages.putIfAbsent(targetDocumentId, () => []);
+    target.insertAll((at ?? target.length).clamp(0, target.length), moved);
+    _renumber(targetDocumentId);
+  }
+
   @override
   Future<List<SearchHitDto>> search(String query, {int limit = 200}) async {
     final q = viNormalize(query);
@@ -210,6 +321,7 @@ final class MemoryLibraryRepository implements LibraryRepository {
     final words = q.split(' ');
     final hits = <SearchHitDto>[];
     for (final d in _docs.values) {
+      if (_trashed.containsKey(d.id)) continue;
       final text = viNormalize(
         [d.title, for (final (p, _) in _pages[d.id] ?? const <(PageInfo, Uint8List)>[]) p.ocrText].join(' '),
       );

@@ -4,6 +4,15 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 
 ## [Chưa phát hành]
 
+### P7a (24/11/2026) - Tổ chức trang + thùng rác
+
+- Thùng rác 30 ngày: "Xóa" tài liệu chuyển vào thùng rác (có Hoàn tác), khôi phục, xóa vĩnh viễn, dọn sạch; tự xóa hẳn
+  tài liệu quá 30 ngày khi mở app. Tài liệu trong thùng rác không hiện trong danh sách và tìm kiếm.
+- Thao tác trang: xoay trái/phải, đưa lên trước/ra sau, chuyển sang tài liệu khác, tách thành tài liệu mới từ một trang,
+  ghép tài liệu khác vào. Trang chuyển đi được mã hóa lại bằng khóa của tài liệu đích.
+- Kính lúp khi kéo góc trang để chỉnh chính xác.
+- Kho lược đồ v2 (thêm cột `trashed_ms`, nâng cấp tự động từ v1).
+
 ### P6 (19/11/2026) - Quét bằng camera
 
 - Màn chụp toàn màn hình (Android/iOS): xem trước có tứ giác dò mép thời gian thực trong lõi Rust (kênh Y, bỏ khung
