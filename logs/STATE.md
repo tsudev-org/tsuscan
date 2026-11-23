@@ -5,9 +5,8 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P7a - Tổ chức trang + thùng rác** - mã + test xong trên `feat/p7a-organize`, chờ PR/CI + chạy thật (phiếu
-  `logs/handover/20261124-08_p7a-to-chuc-trang-thung-rac.md`)
-- [ ] P7b - Chú thích + chữ ký + che thông tin
+- [ ] **P7b - Chú thích + chữ ký + che thông tin** (nhánh `feat/p7b-annotate`; trước đó chạy thật P7a trên điện thoại -
+  phiếu `logs/handover/20261124-08_p7a-to-chuc-trang-thung-rac.md` mục 2)
 - [ ] P7c - OCR trong app + đặt tên thông minh, nhận diện giấy tờ, danh thiếp → vCard
 - [ ] Phiếu GP1 - Google Play Console (sau P6, cần 👤 bấm gửi duyệt); PRO1/PRO2 sau P8
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
@@ -22,9 +21,14 @@
 
 | Task | Agent | Bắt đầu |
 | --- | --- | --- |
-| P7a Tổ chức trang + thùng rác (`feat/p7a-organize`) | agent-scan | 24/11/2026 |
+| (trống - P7b chưa bắt đầu) | | |
 
 ## Đã hoàn thành (mới nhất trên cùng)
+
+- 24/11/2026 - P7a Tổ chức trang + thùng rác (agent-scan, PR #12 squash `35598d4`): kho lược đồ v2 (`trashed_ms`), thùng
+  rác 30 ngày (Hoàn tác, khôi phục, xóa vĩnh viễn, tự dọn khi mở kho, không lập chỉ mục tìm kiếm), xoay/sắp xếp trang,
+  chuyển/tách/ghép tài liệu (mã hóa lại bằng DK đích), kính lúp khi kéo góc. Phiếu rà soát
+  `docs/security-reviews/20261124-p7a-organize.md`. Test: vault +5, ffi +1, Dart 47. Chưa chạy thật (điện thoại ngắt adb).
 
 - 24/11/2026 - P6 Quét bằng camera (agent-scan, PR #9 squash `a7bee25`): dò mép thời gian thực trong lõi Rust, tự chụp,
   chụp loạt, chế độ Tài liệu/CCCD/Danh thiếp/Bảng trắng/Ảnh/Sách (tách 2 trang)/QR-mã vạch, duyệt + sửa trang, nhớ chế

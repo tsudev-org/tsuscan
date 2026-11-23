@@ -23,7 +23,7 @@
 
 ## 2. Việc dang dở + bước tiếp theo CỤ THỂ
 
-- [ ] Gộp PR #9 (P6) khi CI xanh, rebase P7a lên main, mở PR P7a, chờ CI, gộp.
+- [x] PR #9 (P6) gộp `a7bee25`; PR #12 (P7a) gộp `35598d4` (iOS/macOS lần đầu hỏng vì GitHub hết máy macOS ⇒ chạy lại đạt).
 - [ ] Chạy thật P7a trên Galaxy M32 (adb Windows `/mnt/c/Users/devng/AppData/Local/Android/Sdk/platform-tools/adb.exe`;
   Flutter trong WSL không thấy máy ⇒ `flutter build apk --profile --target-platform android-arm64` (~12 phút) rồi `adb.exe install -r`).
   24/11: APK profile P7a đã build sẵn ở `C:\Users\devng\AppData\Local\Temp\tsuscan\app-profile.apk`, nhưng điện thoại ngắt
@@ -41,7 +41,8 @@
 
 - [x] check-standards, `cargo fmt --check`, clippy `-D warnings` (vault, ffi), `cargo test` vault + ffi library
 - [x] `flutter analyze --fatal-infos` 0, `flutter test` 47 đạt
-- [ ] CI của PR P7a, chạy thật Android
+- [x] CI của PR #12
+- [ ] Chạy thật Android
 
 ## 7. Kết quả xử lý (agent nhận điền)
 
