@@ -65,7 +65,7 @@
 - 24/11/2026 (agent-scan, phiên d786): phần mã P6 (chạy thật Galaxy M32, Sách/QR, nhớ chế độ) đã có sẵn từ phiên trước
   nhưng chưa commit ⇒ kiểm cổng: check-standards đạt, `cargo fmt --check` đạt, `cargo clippy -p tsuscan-imaging
   -p tsuscan-doc -p tsuscan-ml -p tsuscan_ffi --all-targets -D warnings` đạt, `flutter analyze --fatal-infos` 0 vấn
-  đề, `flutter test` 43 đạt. `cargo test` chưa chạy xong (bị cắt vì hết hạn mức). Đã commit cục bộ, CHƯA push.
-  Tiếp: chạy `cargo test -p tsuscan-imaging -p tsuscan-doc -p tsuscan_ffi` → `git rebase origin/main` (main có #10, #11,
+  đề, `flutter test` 43 đạt. `cargo test` 3 crate đạt (106 test, 0 lỗi). Đã commit cục bộ, CHƯA push.
+  Tiếp: `git rebase origin/main` (main có #10, #11,
   không trùng file) → push `feat/p6-camera`, đổi PR #9 khỏi nháp, chờ CI, gộp squash → xóa khóa `logs/LOCKS.md`,
   cập nhật STATE, ĐÓNG phiếu này → P7. Phiếu GP1 (trên main) làm sau khi P6 gộp. SEC1, AV1 đã ĐÓNG.
