@@ -5,8 +5,8 @@
 
 ## Hàng đợi task (làm từ trên xuống)
 
-- [ ] **P7b - Chú thích + chữ ký + che thông tin** (nhánh `feat/p7b-annotate`; trước đó chạy thật P7a trên điện thoại -
-  phiếu `logs/handover/20261124-08_p7a-to-chuc-trang-thung-rac.md` mục 2)
+- [ ] **P7b - Chú thích + chữ ký + che thông tin** (nhánh `feat/p7b-annotate`; trước đó AGENT TỰ chạy thật P7a qua adb Windows -
+  phiếu `logs/handover/20261124-08_p7a-to-chuc-trang-thung-rac.md` mục 3, P7b gợi ý mục 4)
 - [ ] P7c - OCR trong app + đặt tên thông minh, nhận diện giấy tờ, danh thiếp → vCard
 - [ ] Phiếu GP1 - Google Play Console (sau P6, cần 👤 bấm gửi duyệt); PRO1/PRO2 sau P8
 - [ ] P8 - Máy chủ sync-api (cần 👤 token Cloudflare, client OIDC)
