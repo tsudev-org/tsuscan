@@ -72,17 +72,28 @@ class _TsuScanAppState extends State<TsuScanApp> {
         ],
         // Chưa chọn ngôn ngữ ⇒ theo hệ điều hành; ngôn ngữ chưa hỗ trợ ⇒ en (PRODUCT_POLICY.md mục 1, phiếu T3).
         localeResolutionCallback: (locale, _) => resolveAppLocale(locale),
-        home: FutureBuilder<LibraryOpenResult>(
+        // AppScope + màn khóa đặt TRÊN Navigator gốc: route toàn màn hình (camera, duyệt trang) và hộp thoại cũng
+        // thấy AppScope, và màn khóa che được cả chúng (trước P6 màn khóa nằm trong route `home` ⇒ hộp thoại đang mở
+        // vẫn hiện đè lên màn khóa).
+        builder: (context, navigator) => FutureBuilder<LibraryOpenResult>(
           future: _open,
           builder: (context, snap) => switch (snap.data) {
-            null => const _Splash(),
-            LibraryReady(:final repository) => _Ready(
+            LibraryReady(:final repository) => AppScope(
               platform: widget.platform,
               settings: widget.settings,
               lock: _lock,
               repository: repository,
               changes: _changes,
+              child: _LockGate(lock: _lock, child: navigator!),
             ),
+            _ => navigator!,
+          },
+        ),
+        home: FutureBuilder<LibraryOpenResult>(
+          future: _open,
+          builder: (context, snap) => switch (snap.data) {
+            null => const _Splash(),
+            LibraryReady(:final repository) => _Ready(repository: repository),
             final LibraryKeyMissing _ => _StartupError(
               missingKey: true,
               onReset: () => _reopen(widget.platform.resetLibrary),
@@ -103,43 +114,44 @@ class _TsuScanAppState extends State<TsuScanApp> {
 Locale resolveAppLocale(Locale? system) => system?.languageCode == 'vi' ? const Locale('vi') : const Locale('en');
 
 class _Ready extends StatelessWidget {
-  const _Ready({
-    required this.platform,
-    required this.settings,
-    required this.lock,
-    required this.repository,
-    required this.changes,
-  });
-  final PlatformBindings platform;
-  final SettingsStore settings;
-  final AppLockController lock;
+  const _Ready({required this.repository});
   final LibraryRepository repository;
-  final LibraryChanges changes;
 
   @override
   Widget build(BuildContext context) {
-    return AppScope(
-      platform: platform,
-      settings: settings,
-      lock: lock,
-      repository: repository,
-      changes: changes,
-      child: ListenableBuilder(
-        listenable: lock,
-        // Màn khóa phủ lên khung chính (giữ nguyên trạng thái điều hướng khi mở khóa).
-        builder: (context, child) => Stack(
-          children: [
-            ExcludeSemantics(excluding: lock.locked, child: child!),
-            if (lock.locked) Positioned.fill(child: LockScreen(controller: lock)),
-          ],
-        ),
-        child: Column(
-          children: [
-            if (!repository.persistent) const _WebNotice(),
-            const Expanded(child: HomeShell()),
-          ],
-        ),
+    return Column(
+      children: [
+        if (!repository.persistent) const _WebNotice(),
+        const Expanded(child: HomeShell()),
+      ],
+    );
+  }
+}
+
+/// Màn khóa phủ lên TOÀN BỘ Navigator (mọi route, hộp thoại); giữ nguyên trạng thái điều hướng khi mở khóa. Phần bị
+/// che bị loại khỏi cây ngữ nghĩa để trình đọc màn hình không đọc nội dung tài liệu sau màn khóa.
+class _LockGate extends StatelessWidget {
+  const _LockGate({required this.lock, required this.child});
+  final AppLockController lock;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: lock,
+      builder: (context, child) => Stack(
+        children: [
+          ExcludeSemantics(excluding: lock.locked, child: child!),
+          // Overlay riêng: ô nhập PIN cần Overlay (chọn chữ, con trỏ) mà ở đây nằm trên Navigator gốc.
+          if (lock.locked)
+            Positioned.fill(
+              child: Overlay(
+                initialEntries: [OverlayEntry(builder: (_) => LockScreen(controller: lock))],
+              ),
+            ),
+        ],
       ),
+      child: child,
     );
   }
 }

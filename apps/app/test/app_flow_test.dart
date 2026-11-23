@@ -94,6 +94,40 @@ void main() {
     expect(find.text('Tsu Scan đang khóa'), findsNothing);
   });
 
+  testWidgets('màn khóa che cả hộp thoại đang mở (hộp thoại ở Navigator gốc)', (tester) async {
+    final platform = FakePlatform();
+    final settings = await freshSettings({'locale': 'vi'});
+    final lock = AppLockController(
+      settings: settings,
+      storage: platform.storage,
+      crypto: platform.pin,
+      biometric: platform.biometric,
+    );
+    await tester.pumpWidget(TsuScanApp(platform: platform, settings: settings, lock: lock));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FloatingActionButton, 'Tài liệu mới'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'Hồ sơ mật');
+    expect(find.byType(AlertDialog), findsOneWidget);
+
+    await settings.setLockEnabled(true);
+    lock.lock();
+    await tester.pumpAndSettle();
+    expect(find.text('Tsu Scan đang khóa'), findsOneWidget);
+    // Hộp thoại vẫn giữ trạng thái phía dưới nhưng không chạm được và không lộ ra trình đọc màn hình.
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.byType(AlertDialog).hitTestable(), findsNothing);
+    final semantics = tester.ensureSemantics();
+    // Chỉ tính nút còn gắn vào cây ngữ nghĩa (finder trả cả nút cũ đã bị ExcludeSemantics tách ra).
+    final live = find
+        .bySemanticsLabel(RegExp('Tên tài liệu'))
+        .evaluate()
+        .where((e) => e.renderObject?.debugSemantics?.attached ?? false);
+    expect(live, isEmpty);
+    expect(find.bySemanticsLabel(RegExp('Tsu Scan đang khóa')), findsWidgets);
+    semantics.dispose();
+  });
+
   testWidgets('kho bí mật mất khóa: báo lỗi và cho tạo kho mới sau khi xác nhận', (tester) async {
     final platform = FakePlatform()..useResult = true;
     final settings = await freshSettings({'locale': 'vi'});

@@ -207,6 +207,16 @@ jobs:
           cd ../.. && cargo fmt --all
           git diff --exit-code -- apps/app/lib crates/tsuscan-ffi/src \
             || { echo "::error::Tệp sinh đã cũ - chạy scripts/gen-bridge.sh, flutter gen-l10n, dart run tool/gen_tokens.dart"; exit 1; }
+      - name: Không dùng gói Dart đã bị rút lại (retracted) hoặc dính cảnh báo bảo mật
+        working-directory: apps/app
+        # jni 1.2.0 (rút lại) làm path_provider_android ném lỗi ngay trong main() ở bản profile/release: app treo màn
+        # khởi động mà test Linux + build debug không bắt được (phiếu 20261119-08).
+        run: |
+          set -euo pipefail
+          flutter pub outdated --json > "$RUNNER_TEMP/outdated.json"
+          bad=$(jq -r '.packages[] | select(.isCurrentRetracted == true or .isCurrentAffectedByAdvisory == true)
+            | "\(.package) \(.current.version)"' "$RUNNER_TEMP/outdated.json")
+          if [ -n "$bad" ]; then echo "::error::pubspec.lock có gói bị rút lại/dính cảnh báo bảo mật: $bad"; exit 1; fi
       - name: Định dạng, phân tích, test
         working-directory: apps/app
         run: |
@@ -248,3 +258,19 @@ jobs:
       - name: Kích thước APK
         working-directory: apps/app
         run: ls -l build/app/outputs/flutter-apk/*.apk
+      - name: Quyền Android tối thiểu (manifest release đã gộp)
+        working-directory: apps/app/android
+        run: |
+          set -euo pipefail
+          # Plugin hay tự khai thêm quyền (ghi âm, bộ nhớ ngoài, mạng): chặn mọi quyền ngoài danh sách đã rà soát.
+          ./gradlew -q :app:processReleaseMainManifest -x cargokitCargoBuildTsuscan_ffiRelease
+          m=$(find ../build/app/intermediates/merged_manifest/release -name AndroidManifest.xml | head -1)
+          got=$(grep -oE '<uses-permission[^>]*android:name="[^"]+"' "$m" | sed -E 's/.*name="([^"]+)"/\1/' | sort)
+          want=$(printf '%s\n' android.permission.CAMERA android.permission.USE_BIOMETRIC \
+            android.permission.USE_FINGERPRINT com.tsudev.tsuscan.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION | sort)
+          echo "$got"
+          if [ "$got" != "$want" ]; then
+            echo "::error::Quyền Android lệch danh sách đã rà soát (docs/security-reviews/20261119-p6-camera.md)"
+            diff <(echo "$want") <(echo "$got") || true
+            exit 1
+          fi

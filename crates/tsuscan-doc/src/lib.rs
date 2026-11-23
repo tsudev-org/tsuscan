@@ -11,7 +11,8 @@
 // Bộ dựng XML/PDF nối chuỗi rất nhiều: `push_str(&format!(..))` dễ đọc hơn `write!` + bỏ kết quả.
 #![allow(clippy::format_push_string)]
 
-pub mod barcode;
+/// Chuyển sang `tsuscan_imaging::barcode` (app dùng không cần kéo theo PDF/OCR); giữ đường dẫn cũ.
+pub use tsuscan_imaging::barcode;
 pub mod compress;
 pub mod error;
 pub mod export;

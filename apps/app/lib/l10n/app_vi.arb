@@ -134,8 +134,6 @@
   "pagerNext": "Sau",
   "pagerPageSizeLabel": "Số bản ghi mỗi trang",
   "scanTitle": "Quét tài liệu",
-  "scanComingBody": "Quét bằng camera có tự dò mép, tự chụp và chụp loạt sẽ có ở bản cập nhật kế tiếp. Lúc này bạn có thể nhập ảnh đã chụp: ảnh được mã hóa ngay trên máy, siêu dữ liệu (vị trí GPS, máy chụp) bị loại bỏ.",
-  "scanImportToNew": "Nhập ảnh thành tài liệu mới",
   "searchHint": "Tìm theo tên hoặc chữ trong trang (gõ không dấu được)",
   "searchMinChars": "Nhập ít nhất 2 ký tự",
   "searchNoResults": "Không tìm thấy kết quả cho \"{query}\"",
@@ -247,5 +245,112 @@
         "format": "decimalPattern"
       }
     }
-  }
+  },
+  "scanIntro": "Chọn chế độ rồi chụp. Mép giấy được dò và nắn thẳng ngay trên máy; ảnh không rời khỏi máy và được mã hóa khi lưu.",
+  "scanStartCamera": "Chụp bằng camera",
+  "scanImport": "Nhập ảnh có sẵn",
+  "scanCameraUnsupported": "Máy này chưa quét bằng camera trong app được. Hãy nhập ảnh có sẵn - mép giấy vẫn được dò và nắn thẳng.",
+  "scanModeLabel": "Chế độ quét",
+  "scanModeDocument": "Tài liệu",
+  "scanModeIdCard": "CCCD 2 mặt",
+  "scanModeBusinessCard": "Danh thiếp",
+  "scanModeWhiteboard": "Bảng trắng",
+  "scanModePhoto": "Ảnh",
+  "scanPermissionDenied": "Tsu Scan chưa được phép dùng camera. Bật quyền Camera cho Tsu Scan trong Cài đặt của máy rồi thử lại, hoặc nhập ảnh có sẵn.",
+  "scanOpenSettings": "Mở Cài đặt",
+  "scanModeBook": "Sách",
+  "scanModeCodes": "QR/mã vạch",
+  "scanHintBook": "Đặt hai trang sách nằm ngang trong khung",
+  "scanHintCodes": "Đưa mã QR hoặc mã vạch vào khung",
+  "scanCodeCopy": "Sao chép",
+  "scanCodeCopied": "Đã sao chép",
+  "scanCodesNone": "Không tìm thấy mã QR hay mã vạch nào.",
+  "scanCodesTitle": "{count, plural, other{Đọc được {count} mã}}",
+  "@scanCodesTitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scanNoCamera": "Không tìm thấy camera trên máy này.",
+  "scanCameraError": "Không mở được camera. Đóng các app khác đang dùng camera rồi thử lại.",
+  "scanHintFind": "Đưa tài liệu vào khung",
+  "scanHintHold": "Giữ yên…",
+  "scanHintNext": "Đã chụp - đặt trang tiếp theo",
+  "scanHintManual": "Bấm nút chụp khi sẵn sàng",
+  "scanSideFront": "Mặt trước",
+  "scanSideBack": "Mặt sau",
+  "scanAutoCapture": "Tự chụp",
+  "scanFlashOff": "Đèn: tắt",
+  "scanFlashAuto": "Đèn: tự động",
+  "scanFlashTorch": "Đèn: luôn bật",
+  "scanShutter": "Chụp",
+  "scanPageCount": "{count, plural, other{{count} trang}}",
+  "@scanPageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scanDone": "Xong",
+  "scanDiscardTitle": "Bỏ các trang đã chụp?",
+  "scanDiscardBody": "{count, plural, other{{count} trang chưa lưu sẽ bị xóa khỏi máy.}}",
+  "@scanDiscardBody": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "scanDiscard": "Bỏ",
+  "scanReviewTitle": "Duyệt trang",
+  "scanAddMore": "Chụp thêm",
+  "scanSaveDocument": "Lưu tài liệu",
+  "scanSaving": "Đang lưu {done}/{total}…",
+  "@scanSaving": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "scanProcessing": "Đang xử lý ảnh…",
+  "scanPageN": "Trang {n}",
+  "@scanPageN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "scanEmptyReview": "Chưa có trang nào.",
+  "scanEditTitle": "Chỉnh trang",
+  "scanEditPage": "Chỉnh góc và bộ lọc",
+  "scanDeletePage": "Xóa trang",
+  "scanMoveUp": "Lên trước",
+  "scanMoveDown": "Xuống sau",
+  "scanFullFrame": "Cả khung",
+  "scanRedetect": "Dò lại",
+  "scanNotFound": "Không dò được mép giấy - kéo bốn góc bằng tay.",
+  "scanInvalidQuad": "Bốn góc phải tạo thành một tứ giác lồi.",
+  "scanShowResult": "Xem kết quả",
+  "scanShowCorners": "Chỉnh góc",
+  "scanFilterLabel": "Bộ lọc",
+  "scanFilterOriginal": "Gốc",
+  "scanFilterAuto": "Tự động",
+  "scanFilterColor": "Màu",
+  "scanFilterGray": "Xám",
+  "scanFilterBw": "Đen trắng",
+  "scanFilterShadow": "Khử bóng",
+  "scanFilterWhiteboard": "Bảng trắng",
+  "scanCornerTopLeft": "Góc trên bên trái",
+  "scanCornerTopRight": "Góc trên bên phải",
+  "scanCornerBottomRight": "Góc dưới bên phải",
+  "scanCornerBottomLeft": "Góc dưới bên trái",
+  "scanCornerHint": "Kéo để chỉnh; dùng phím mũi tên khi đang chọn"
 }

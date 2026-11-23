@@ -206,13 +206,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get scanTitle => 'Quét tài liệu';
 
   @override
-  String get scanComingBody =>
-      'Quét bằng camera có tự dò mép, tự chụp và chụp loạt sẽ có ở bản cập nhật kế tiếp. Lúc này bạn có thể nhập ảnh đã chụp: ảnh được mã hóa ngay trên máy, siêu dữ liệu (vị trí GPS, máy chụp) bị loại bỏ.';
-
-  @override
-  String get scanImportToNew => 'Nhập ảnh thành tài liệu mới';
-
-  @override
   String get searchHint => 'Tìm theo tên hoặc chữ trong trang (gõ không dấu được)';
 
   @override
@@ -382,4 +375,231 @@ class AppLocalizationsVi extends AppLocalizations {
 
     return '$range (lọc từ $allString)';
   }
+
+  @override
+  String get scanIntro =>
+      'Chọn chế độ rồi chụp. Mép giấy được dò và nắn thẳng ngay trên máy; ảnh không rời khỏi máy và được mã hóa khi lưu.';
+
+  @override
+  String get scanStartCamera => 'Chụp bằng camera';
+
+  @override
+  String get scanImport => 'Nhập ảnh có sẵn';
+
+  @override
+  String get scanCameraUnsupported =>
+      'Máy này chưa quét bằng camera trong app được. Hãy nhập ảnh có sẵn - mép giấy vẫn được dò và nắn thẳng.';
+
+  @override
+  String get scanModeLabel => 'Chế độ quét';
+
+  @override
+  String get scanModeDocument => 'Tài liệu';
+
+  @override
+  String get scanModeIdCard => 'CCCD 2 mặt';
+
+  @override
+  String get scanModeBusinessCard => 'Danh thiếp';
+
+  @override
+  String get scanModeWhiteboard => 'Bảng trắng';
+
+  @override
+  String get scanModePhoto => 'Ảnh';
+
+  @override
+  String get scanPermissionDenied =>
+      'Tsu Scan chưa được phép dùng camera. Bật quyền Camera cho Tsu Scan trong Cài đặt của máy rồi thử lại, hoặc nhập ảnh có sẵn.';
+
+  @override
+  String get scanOpenSettings => 'Mở Cài đặt';
+
+  @override
+  String get scanModeBook => 'Sách';
+
+  @override
+  String get scanModeCodes => 'QR/mã vạch';
+
+  @override
+  String get scanHintBook => 'Đặt hai trang sách nằm ngang trong khung';
+
+  @override
+  String get scanHintCodes => 'Đưa mã QR hoặc mã vạch vào khung';
+
+  @override
+  String get scanCodeCopy => 'Sao chép';
+
+  @override
+  String get scanCodeCopied => 'Đã sao chép';
+
+  @override
+  String get scanCodesNone => 'Không tìm thấy mã QR hay mã vạch nào.';
+
+  @override
+  String scanCodesTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Đọc được $count mã');
+    return '$_temp0';
+  }
+
+  @override
+  String get scanNoCamera => 'Không tìm thấy camera trên máy này.';
+
+  @override
+  String get scanCameraError => 'Không mở được camera. Đóng các app khác đang dùng camera rồi thử lại.';
+
+  @override
+  String get scanHintFind => 'Đưa tài liệu vào khung';
+
+  @override
+  String get scanHintHold => 'Giữ yên…';
+
+  @override
+  String get scanHintNext => 'Đã chụp - đặt trang tiếp theo';
+
+  @override
+  String get scanHintManual => 'Bấm nút chụp khi sẵn sàng';
+
+  @override
+  String get scanSideFront => 'Mặt trước';
+
+  @override
+  String get scanSideBack => 'Mặt sau';
+
+  @override
+  String get scanAutoCapture => 'Tự chụp';
+
+  @override
+  String get scanFlashOff => 'Đèn: tắt';
+
+  @override
+  String get scanFlashAuto => 'Đèn: tự động';
+
+  @override
+  String get scanFlashTorch => 'Đèn: luôn bật';
+
+  @override
+  String get scanShutter => 'Chụp';
+
+  @override
+  String scanPageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count trang');
+    return '$_temp0';
+  }
+
+  @override
+  String get scanDone => 'Xong';
+
+  @override
+  String get scanDiscardTitle => 'Bỏ các trang đã chụp?';
+
+  @override
+  String scanDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count trang chưa lưu sẽ bị xóa khỏi máy.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scanDiscard => 'Bỏ';
+
+  @override
+  String get scanReviewTitle => 'Duyệt trang';
+
+  @override
+  String get scanAddMore => 'Chụp thêm';
+
+  @override
+  String get scanSaveDocument => 'Lưu tài liệu';
+
+  @override
+  String scanSaving(int done, int total) {
+    return 'Đang lưu $done/$total…';
+  }
+
+  @override
+  String get scanProcessing => 'Đang xử lý ảnh…';
+
+  @override
+  String scanPageN(int n) {
+    return 'Trang $n';
+  }
+
+  @override
+  String get scanEmptyReview => 'Chưa có trang nào.';
+
+  @override
+  String get scanEditTitle => 'Chỉnh trang';
+
+  @override
+  String get scanEditPage => 'Chỉnh góc và bộ lọc';
+
+  @override
+  String get scanDeletePage => 'Xóa trang';
+
+  @override
+  String get scanMoveUp => 'Lên trước';
+
+  @override
+  String get scanMoveDown => 'Xuống sau';
+
+  @override
+  String get scanFullFrame => 'Cả khung';
+
+  @override
+  String get scanRedetect => 'Dò lại';
+
+  @override
+  String get scanNotFound => 'Không dò được mép giấy - kéo bốn góc bằng tay.';
+
+  @override
+  String get scanInvalidQuad => 'Bốn góc phải tạo thành một tứ giác lồi.';
+
+  @override
+  String get scanShowResult => 'Xem kết quả';
+
+  @override
+  String get scanShowCorners => 'Chỉnh góc';
+
+  @override
+  String get scanFilterLabel => 'Bộ lọc';
+
+  @override
+  String get scanFilterOriginal => 'Gốc';
+
+  @override
+  String get scanFilterAuto => 'Tự động';
+
+  @override
+  String get scanFilterColor => 'Màu';
+
+  @override
+  String get scanFilterGray => 'Xám';
+
+  @override
+  String get scanFilterBw => 'Đen trắng';
+
+  @override
+  String get scanFilterShadow => 'Khử bóng';
+
+  @override
+  String get scanFilterWhiteboard => 'Bảng trắng';
+
+  @override
+  String get scanCornerTopLeft => 'Góc trên bên trái';
+
+  @override
+  String get scanCornerTopRight => 'Góc trên bên phải';
+
+  @override
+  String get scanCornerBottomRight => 'Góc dưới bên phải';
+
+  @override
+  String get scanCornerBottomLeft => 'Góc dưới bên trái';
+
+  @override
+  String get scanCornerHint => 'Kéo để chỉnh; dùng phím mũi tên khi đang chọn';
 }

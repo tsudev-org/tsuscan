@@ -5,6 +5,7 @@
 pub mod error;
 pub mod library;
 pub mod pin;
+pub mod scan;
 pub mod text;
 
 /// Khởi tạo cầu nối (flutter_rust_bridge gọi một lần khi Dart nạp thư viện).

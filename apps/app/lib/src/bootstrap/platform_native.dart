@@ -10,6 +10,7 @@ import '../bridge/generated/api/library.dart' show LibraryHandle, generateDbKey,
 import '../bridge/generated/api/pin.dart' as pin_api;
 import '../bridge/generated/frb_generated.dart';
 import '../data/library_repository.dart';
+import '../data/scan_engine.dart';
 import '../services/app_lock.dart';
 import '../services/key_storage.dart';
 import 'platform.dart';
@@ -32,6 +33,8 @@ final class _NativeBindings implements PlatformBindings {
   final BiometricAuth biometric = _LocalBiometric();
   @override
   String get coreVersion => api.coreVersion();
+  @override
+  final ScanEngine scan = const RustScanEngine();
 
   @override
   Future<LibraryOpenResult> openLibrary() async {

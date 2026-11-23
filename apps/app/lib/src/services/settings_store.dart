@@ -15,6 +15,7 @@ class SettingsStore extends ChangeNotifier {
   static const _kLocale = 'locale';
   static const _kLock = 'app_lock';
   static const _kBiometric = 'app_lock_biometric';
+  static const _kScanMode = 'scan_mode';
   static const supportedLocales = [Locale('vi'), Locale('en')];
 
   final SharedPreferences _prefs;
@@ -29,6 +30,11 @@ class SettingsStore extends ChangeNotifier {
   Locale? get locale => _localeCode == null ? null : Locale(_localeCode!);
   bool get lockEnabled => _lockEnabled;
   bool get biometricEnabled => _biometricEnabled;
+
+  /// Mã chế độ quét dùng lần trước (`ScanMode.name`; tầng quét tự kiểm hợp lệ).
+  String? get scanMode => _prefs.getString(_kScanMode);
+
+  Future<void> setScanMode(String v) => _prefs.setString(_kScanMode, v);
 
   /// Mốc bộ chọn số bản ghi (`DATA_TABLE.md` mục 2).
   static const pageSizes = [10, 20, 50, 100, 200];

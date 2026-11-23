@@ -1,4 +1,5 @@
 import '../data/library_repository.dart';
+import '../data/scan_engine.dart';
 import '../services/app_lock.dart';
 import '../services/key_storage.dart';
 import 'platform_native.dart' if (dart.library.js_interop) 'platform_web.dart' as impl;
@@ -29,6 +30,9 @@ abstract interface class PlatformBindings {
   PinCrypto get pin;
   BiometricAuth get biometric;
   String get coreVersion;
+
+  /// Dò mép, nắn, lọc ảnh quét.
+  ScanEngine get scan;
 
   /// Mở kho có sẵn hoặc tạo kho mới ở lần chạy đầu.
   Future<LibraryOpenResult> openLibrary();

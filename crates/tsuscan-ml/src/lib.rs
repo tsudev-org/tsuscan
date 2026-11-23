@@ -18,7 +18,8 @@ pub mod manifest;
 pub mod metrics;
 pub mod ocr;
 pub mod orientation;
-pub mod pages;
+/// Chuyển sang `tsuscan_imaging::pages` (thuật toán cổ điển, app dùng không cần kéo theo tract); giữ đường dẫn cũ.
+pub use tsuscan_imaging::pages;
 pub mod prep;
 pub mod runtime;
 #[cfg(feature = "synth")]

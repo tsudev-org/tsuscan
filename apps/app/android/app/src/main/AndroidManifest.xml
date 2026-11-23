@@ -1,6 +1,19 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Mở khóa app bằng sinh trắc học. Không xin quyền mạng/vị trí: ảnh và chữ không rời máy (ADR-0002). -->
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- Quét bằng camera (P6). Hỏi lúc mở màn Quét lần đầu, không hỏi khi khởi động. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Quyền tối thiểu: plugin camera tự khai báo ghi âm (quay video) và ghi bộ nhớ ngoài - app không quay video, ảnh
+         chụp được đọc vào bộ nhớ rồi xóa ngay khỏi thư mục cache riêng của app ⇒ gỡ cả hai khỏi manifest đã gộp. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove" />
+    <!-- Trình gộp manifest tự suy ra READ_EXTERNAL_STORAGE từ quyền ghi ở trên; media3-common (phần quay video của
+         CameraX) khai ACCESS_NETWORK_STATE. App không đọc bộ nhớ ngoài, không quay video, không dùng mạng ⇒ gỡ. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" tools:node="remove" />
+    <!-- Máy không có camera (máy tính bảng, Chromebook) vẫn cài được và nhập ảnh có sẵn. -->
+    <uses-feature android:name="android.hardware.camera.any" android:required="false" tools:replace="android:required" />
     <application
         android:label="Tsu Scan"
         android:name="${applicationName}"

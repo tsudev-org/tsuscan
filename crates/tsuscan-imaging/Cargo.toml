@@ -11,12 +11,15 @@ publish.workspace = true
 [features]
 # Bộ sinh ảnh tổng hợp có nhãn (test, benchmark, CLI dev). Không bật trong app.
 synth = []
+# Đọc QR/mã vạch (cổng ZXing `rxing`, chỉ bộ giải mã). Tách riêng để bản nào không cần thì không mang rxing.
+barcode = ["dep:rxing"]
 
 [dependencies]
 image.workspace = true
 imageproc.workspace = true
 nalgebra.workspace = true
 thiserror.workspace = true
+rxing = { version = "0.9.4", optional = true, default-features = false, features = ["decoders", "multi_barcode_readers", "qrcode", "oned", "datamatrix", "pdf417", "aztec", "encoding_rs"] }
 
 [dev-dependencies]
 # Tự phụ thuộc để test tích hợp/benchmark luôn có tính năng `synth`.

@@ -4,6 +4,34 @@ Theo [Keep a Changelog](https://keepachangelog.com/vi/1.1.0/), phiên bản theo
 
 ## [Chưa phát hành]
 
+### P6 (19/11/2026) - Quét bằng camera
+
+- Màn chụp toàn màn hình (Android/iOS): xem trước có tứ giác dò mép thời gian thực trong lõi Rust (kênh Y, bỏ khung
+  khi bận), tự chụp khi tài liệu đứng yên và chờ trang đổi mới chụp tiếp (chụp loạt), đèn tắt/tự động/luôn bật.
+- Chế độ: Tài liệu, CCCD 2 mặt (nhắc mặt trước/sau), Danh thiếp, Bảng trắng, Ảnh (không cắt).
+- Duyệt trang: đổi thứ tự, xóa, chỉnh 4 góc (kéo hoặc phím mũi tên), dò lại, giữ cả khung, 7 bộ lọc, xem kết quả;
+  lưu thành tài liệu, mã hóa JPEG một lần, không EXIF/GPS.
+- Nhập ảnh có sẵn cũng được dò mép + nắn + lọc qua cùng màn duyệt (mọi nền tảng).
+- Cầu Rust: `detect_preview`, `CapturedImage` (giải mã một lần, xóa trắng khi giải phóng), `add_scanned_page`.
+- Quyền tối thiểu: chỉ `CAMERA` (gỡ `RECORD_AUDIO`/`WRITE_EXTERNAL_STORAGE` plugin tự thêm); ảnh tạm của camera bị xóa
+  ngay sau khi đọc; camera tắt khi app vào nền hoặc khóa.
+- Chế độ Sách: tìm gáy và tách ảnh hai trang thành 2 trang (mỗi trang chỉnh góc riêng). Chế độ QR/mã vạch: đọc ngay
+  trên khung xem trước hoặc trên ảnh nhập, hiện chữ thuần + sao chép (không tự mở liên kết). Nhớ chế độ quét lần trước.
+- Chạy thật trên Galaxy M32 5G: dò mép xem trước nhanh hơn (ảnh làm việc 320 px, chỉ gửi 1/4 số hàng qua cầu, lấy khung
+  camera theo nhịp thay vì nhận cả 30 khung/giây - trước đó app ăn > 300% CPU khi mở camera).
+- Quyền camera bị từ chối: không còn tự hỏi lại liên tục; thêm nút "Mở Cài đặt".
+- Thanh trạng thái trên màn chụp đổi sang biểu tượng sáng (trước đó chìm trên nền đen).
+
+### Sửa lỗi
+
+- Bản profile/release treo ở màn khởi động do `jni` 1.2.0 (đã bị tác giả rút lại) - hạ về 1.1.2; CI chặn gói Dart bị rút
+  lại hoặc dính cảnh báo bảo mật.
+
+### Sửa lỗi bảo mật
+
+- Màn khóa app không che hộp thoại và route trên Navigator gốc (có từ P5): hộp thoại đang mở vẫn hiện và bấm được khi
+  app khóa. Nay màn khóa phủ toàn bộ Navigator (`MaterialApp.builder`), có test hồi quy.
+
 ### P5 (19/11/2026) - Khung app Flutter
 
 - App Flutter 6 đích (Android, iOS, macOS, Windows, Linux, web xem trước) trên lõi Rust qua `flutter_rust_bridge`

@@ -10,6 +10,7 @@ import 'api.dart';
 import 'api/error.dart';
 import 'api/library.dart';
 import 'api/pin.dart';
+import 'api/scan.dart';
 import 'api/text.dart';
 
 import 'dart:async';
@@ -27,8 +28,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     required super.portManager,
   });
 
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_CapturedImagePtr =>
+      wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage;
+
   CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_LibraryHandlePtr =>
       wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle;
+
+  @protected
+  CapturedImage dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    dynamic raw,
+  );
 
   @protected
   LibraryHandle dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
@@ -36,9 +45,17 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  CapturedImage dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    dynamic raw,
+  );
+
+  @protected
   LibraryHandle dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     dynamic raw,
   );
+
+  @protected
+  CapturedImage dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(dynamic raw);
 
   @protected
   LibraryHandle dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(dynamic raw);
@@ -56,10 +73,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  ScanQuad dco_decode_box_autoadd_scan_quad(dynamic raw);
+
+  @protected
   DocumentDto dco_decode_document_dto(dynamic raw);
 
   @protected
   DocumentPage dco_decode_document_page(dynamic raw);
+
+  @protected
+  double dco_decode_f_32(dynamic raw);
 
   @protected
   double dco_decode_f_64(dynamic raw);
@@ -77,6 +100,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 dco_decode_i_64(dynamic raw);
 
   @protected
+  List<String> dco_decode_list_String(dynamic raw);
+
+  @protected
   List<DocumentDto> dco_decode_list_document_dto(dynamic raw);
 
   @protected
@@ -89,10 +115,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PageDto> dco_decode_list_page_dto(dynamic raw);
 
   @protected
+  List<double> dco_decode_list_prim_f_64_loose(dynamic raw);
+
+  @protected
+  Float64List dco_decode_list_prim_f_64_strict(dynamic raw);
+
+  @protected
   List<int> dco_decode_list_prim_u_8_loose(dynamic raw);
 
   @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+
+  @protected
+  List<ScanBarcode> dco_decode_list_scan_barcode(dynamic raw);
+
+  @protected
+  List<ScanQuad> dco_decode_list_scan_quad(dynamic raw);
 
   @protected
   List<SearchHitDto> dco_decode_list_search_hit_dto(dynamic raw);
@@ -104,7 +142,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? dco_decode_opt_String(dynamic raw);
 
   @protected
+  ScanQuad? dco_decode_opt_box_autoadd_scan_quad(dynamic raw);
+
+  @protected
+  List<ScanQuad>? dco_decode_opt_list_scan_quad(dynamic raw);
+
+  @protected
   PageDto dco_decode_page_dto(dynamic raw);
+
+  @protected
+  ScanBarcode dco_decode_scan_barcode(dynamic raw);
+
+  @protected
+  ScanQuad dco_decode_scan_quad(dynamic raw);
 
   @protected
   SearchHitDto dco_decode_search_hit_dto(dynamic raw);
@@ -128,12 +178,27 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt dco_decode_usize(dynamic raw);
 
   @protected
+  CapturedImage sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LibraryHandle sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     SseDeserializer deserializer,
   );
 
   @protected
+  CapturedImage sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   LibraryHandle sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  CapturedImage sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
     SseDeserializer deserializer,
   );
 
@@ -155,10 +220,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  ScanQuad sse_decode_box_autoadd_scan_quad(SseDeserializer deserializer);
+
+  @protected
   DocumentDto sse_decode_document_dto(SseDeserializer deserializer);
 
   @protected
   DocumentPage sse_decode_document_page(SseDeserializer deserializer);
+
+  @protected
+  double sse_decode_f_32(SseDeserializer deserializer);
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
@@ -176,6 +247,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
 
   @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+  @protected
   List<DocumentDto> sse_decode_list_document_dto(SseDeserializer deserializer);
 
   @protected
@@ -188,10 +262,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<PageDto> sse_decode_list_page_dto(SseDeserializer deserializer);
 
   @protected
+  List<double> sse_decode_list_prim_f_64_loose(SseDeserializer deserializer);
+
+  @protected
+  Float64List sse_decode_list_prim_f_64_strict(SseDeserializer deserializer);
+
+  @protected
   List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer);
 
   @protected
   Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+  @protected
+  List<ScanBarcode> sse_decode_list_scan_barcode(SseDeserializer deserializer);
+
+  @protected
+  List<ScanQuad> sse_decode_list_scan_quad(SseDeserializer deserializer);
 
   @protected
   List<SearchHitDto> sse_decode_list_search_hit_dto(SseDeserializer deserializer);
@@ -203,7 +289,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String? sse_decode_opt_String(SseDeserializer deserializer);
 
   @protected
+  ScanQuad? sse_decode_opt_box_autoadd_scan_quad(SseDeserializer deserializer);
+
+  @protected
+  List<ScanQuad>? sse_decode_opt_list_scan_quad(SseDeserializer deserializer);
+
+  @protected
   PageDto sse_decode_page_dto(SseDeserializer deserializer);
+
+  @protected
+  ScanBarcode sse_decode_scan_barcode(SseDeserializer deserializer);
+
+  @protected
+  ScanQuad sse_decode_scan_quad(SseDeserializer deserializer);
 
   @protected
   SearchHitDto sse_decode_search_hit_dto(SseDeserializer deserializer);
@@ -227,14 +325,32 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
+  void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    CapturedImage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     LibraryHandle self,
     SseSerializer serializer,
   );
 
   @protected
+  void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    CapturedImage self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     LibraryHandle self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    CapturedImage self,
     SseSerializer serializer,
   );
 
@@ -257,10 +373,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_scan_quad(ScanQuad self, SseSerializer serializer);
+
+  @protected
   void sse_encode_document_dto(DocumentDto self, SseSerializer serializer);
 
   @protected
   void sse_encode_document_page(DocumentPage self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_f_32(double self, SseSerializer serializer);
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
@@ -278,6 +400,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_document_dto(List<DocumentDto> self, SseSerializer serializer);
 
   @protected
@@ -290,10 +415,22 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_list_page_dto(List<PageDto> self, SseSerializer serializer);
 
   @protected
+  void sse_encode_list_prim_f_64_loose(List<double> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_prim_f_64_strict(Float64List self, SseSerializer serializer);
+
+  @protected
   void sse_encode_list_prim_u_8_loose(List<int> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_scan_barcode(List<ScanBarcode> self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_list_scan_quad(List<ScanQuad> self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_search_hit_dto(List<SearchHitDto> self, SseSerializer serializer);
@@ -305,7 +442,19 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_opt_String(String? self, SseSerializer serializer);
 
   @protected
+  void sse_encode_opt_box_autoadd_scan_quad(ScanQuad? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_list_scan_quad(List<ScanQuad>? self, SseSerializer serializer);
+
+  @protected
   void sse_encode_page_dto(PageDto self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scan_barcode(ScanBarcode self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_scan_quad(ScanQuad self, SseSerializer serializer);
 
   @protected
   void sse_encode_search_hit_dto(SearchHitDto self, SseSerializer serializer);
@@ -334,6 +483,16 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
 
+  void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(ptr);
+
+  void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(ptr);
+
   void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(
     int ptr,
   ) => wasmModule
@@ -351,6 +510,12 @@ external RustLibWasmModule get wasmModule;
 @JS()
 @anonymous
 extension type RustLibWasmModule._(JSObject _) implements JSObject {
+  external void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(int ptr);
+
+  external void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerCapturedImage(int ptr);
+
   external void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerLibraryHandle(int ptr);
 

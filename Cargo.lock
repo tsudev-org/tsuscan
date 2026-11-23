@@ -3044,6 +3044,7 @@ dependencies = [
  "image",
  "imageproc",
  "nalgebra",
+ "rxing",
  "thiserror",
  "tsuscan-imaging",
 ]
@@ -3091,6 +3092,7 @@ dependencies = [
  "flutter_rust_bridge",
  "getrandom",
  "image",
+ "rxing",
  "subtle",
  "tsuscan-imaging",
  "tsuscan-vault",
